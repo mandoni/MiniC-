@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Carlos
  */
 public class interfaz extends javax.swing.JFrame {
 
