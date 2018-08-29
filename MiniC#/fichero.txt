@@ -1,0 +1,5 @@
+void hacer(){
+	string cadena = "cadena";
+	//comentario 
+	NewArray[] array;
+}
