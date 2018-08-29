@@ -9,7 +9,7 @@
  * 
  */
 
-package minic;
+package analizador;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,11 +25,12 @@ import java.util.logging.Logger;
 
 /**
  *
+ * 
  */
 public class interfaz extends javax.swing.JFrame {
 
     /** Creates new form interfaz */
-    //List<identificador> tokenslist;
+    List<identificador> tokenslist;
     public interfaz() {
         initComponents();
     }
@@ -151,8 +152,13 @@ public class interfaz extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        
-        //tablaResultado();
+        try{
+             probarLexerFile("");
+        }
+        catch (IOException ex){
+            System.out.println(ex.getMessage());
+        }
+        tablaResultado();
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -180,7 +186,7 @@ public class interfaz extends javax.swing.JFrame {
         linea=1;
         column = l =0;
         
-        //tokenslist = new LinkedList<identificador>();
+        tokenslist = new LinkedList<identificador>();
         File fichero = new File ("fichero.txt");
         PrintWriter writer;
         try {
@@ -208,7 +214,6 @@ public class interfaz extends javax.swing.JFrame {
             Token token =lexer.yylex();
             int tamano = lexer.yylength();
             if(token == null){
-                resultado = resultado+"------------------------------end------------------------------";
                 jTextArea1.setText(resultado);
                 return resultado;
             }
@@ -232,10 +237,10 @@ public class interfaz extends javax.swing.JFrame {
                     else{
                         char[] cadena = lexer.lexeme.toCharArray();
                         String cadenaValida="";
-                        for(int i = 0; i<32;i++){
+                        for(int i = 0; i<31;i++){
                             cadenaValida+=cadena[i];
                         }
-                        resultado = resultado + cadenaValida + "\t\tline "+linea+" cols "+(column+1)+"-"+(column+31)+" is "+token+"\n";
+                        resultado = resultado + cadenaValida + "\t\tline "+linea+" cols "+(column+1)+"-"+(column+31)+" is "+token+" (truncated)\n";
                         column = column + tamano + 32;
                     }
                     break;
@@ -265,7 +270,7 @@ public class interfaz extends javax.swing.JFrame {
                      resultado = resultado + "**Error line "+linea+".*** Comment not finished: "+lexer.lexeme+"\n";
                     break;
                 case T_EString:
-                    resultado = resultado + "**Error line "+linea+".*** String not finished: "+lexer.lexeme+"\n";
+                    resultado = resultado + "**Error line "+linea+".*** String not finished. \n";
                     break;
             } 
         }
@@ -304,18 +309,18 @@ public class interfaz extends javax.swing.JFrame {
     }
     
     
-//    public void tablaResultado(){
-//        Object[][] matriz = new Object [tokenslist.size()][2];
-//        for(int i =0; i<tokenslist.size();i++){
-//            matriz[i][0] = tokenslist.get(i).nombre;
-//            matriz[i][1] = tokenslist.get(i).ID;
-//        }
-//        jTable1.setModel(new javax.swing.table.DefaultTableModel(matriz,
-//            new String [] {
-//                "Nombre", "ID"
-//        }
-//        ));
-//    }
+    public void tablaResultado(){
+        Object[][] matriz = new Object [tokenslist.size()][2];
+        for(int i =0; i<tokenslist.size();i++){
+            matriz[i][0] = tokenslist.get(i).nombre;
+            matriz[i][1] = tokenslist.get(i).ID;
+        }
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(matriz,
+            new String [] {
+                "Nombre", "ID"
+        }
+        ));
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
