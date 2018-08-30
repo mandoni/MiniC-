@@ -279,7 +279,7 @@ public class interfaz extends javax.swing.JFrame {
     
     private void comment (char[] code){
         if(code[l]=='/' && code[l+1]=='/'){
-            linea++;
+            //linea++;
             return;
         }
         

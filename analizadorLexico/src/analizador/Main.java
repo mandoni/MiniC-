@@ -22,8 +22,8 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        //String path = "C:/Users/TonyTaze/Downloads/Universidad/Sexto Ciclo/COMPILADORES/analizadorLexico-Java - copia/src/analizador/Lexer.flex";
-        //generarLexer(path);
+        //String path = "C:/Users/TonyTaze/Downloads/Universidad/Sexto Ciclo/COMPILADORES/MiniC-/analizadorLexico/src/analizador/Lexer.flex";
+        //(generarLexer(path);
         
         int result;
         String fileName, path, code="", line, newPath = "";

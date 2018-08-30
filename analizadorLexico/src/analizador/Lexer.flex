@@ -51,6 +51,7 @@ Igual = [=]
 Y = [&] 
 O = [|] 
 Not = [!] 
+DOS = [:]
 Coma = [,] 
 
 CorA = [\[] 
@@ -68,6 +69,7 @@ Z = [a-zA-Z0-9]+
 Hex1 = “0x”[0-9|A-F|a-f]+
 Hex2 = “0X”[0-9|A-F|a-f]+
 Des = [0-9]+
+TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 
 %{
 public String lexeme;
@@ -96,18 +98,21 @@ public String lexeme;
 {Ln}({D}|{L})* {lexeme=yytext(); return T_Identifier;}
 {Z}+{Ln}({D}|{L})* {lexeme=yytext(); return ERROR;}
 ({Des}|{Hex1}|{Hex2}){L}+ {lexeme=yytext(); return ERROR;}
-{Comment1}{Comment1}({L}|{Ls}|{D}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|{Comilla}))* {lexeme=yytext(); return T_Comment;}
-{Comment1}{Comment2}({LINE}|{ALL}|{L}|{D}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|{Comilla}))* {lexeme=yytext(); return T_EComment;}
-{Comment1}{Comment2}({LINE}|{ALL}|{L}|{D}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|{Comilla}))*{Comment2}{Comment1} {lexeme=yytext(); return T_Comment;}
+{Comment1}{Comment1}({L}|{Ls}|{D}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|{Comilla}|{DOS}))* {lexeme=yytext(); return T_Comment;}
+
+
+{TraditionalComment} {lexeme=yytext(); return T_Comment;}
+{Comment1}{Comment2} .* {lexeme=yytext(); return T_EComment;}
 {Des}{Punto}{D}*|{Des}{Punto}{D}*({Em}|{EMm})({Suma}|{Resta})*{Des}|{Des}{Punto}{D}*({Em}|{EMm}){Des} {lexeme=yytext(); return T_DoubleConstant;}
 {L}+{Des}{Punto}{D}*|{L}+{Des}{Punto}{D}*({Em}|{EMm})({Suma}|{Resta})*{Des}|{L}+{Des}{Punto}{D}*({Em}|{EMm}){Des} {lexeme=yytext(); return ERROR;}
 {Des}{Punto}{D}*{Z}+|{Des}{Punto}{D}*({Em}|{EMm})({Suma}|{Resta})*{Des}{Z}+|{Des}{Punto}{D}*({Em}|{EMm}){Des}{Z}+ {lexeme=yytext(); return ERROR;}
 
 {Des}|{Hex1}|{Hex2} {lexeme=yytext(); return T_IntConstant;}
+{Comilla}({L}|{D}|{Ls}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}))*{LINE} {lexeme=yytext(); return T_EString;}
+{Comilla}({L}|{D}|{Ls}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}))* {lexeme=yytext(); return T_EString;}
 {Comilla}({L}|{D}|{Ls}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}))*{Comilla} {lexeme=yytext(); return T_StringConstant;}
-{Comilla} {lexeme=yytext(); return T_EString;}
-{Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|
-{Myq}{Igual}|{Meq}{Igual}|{Igual}{Igual}|{Not}{Igual}|{Y}{Y}|{O}{O}|{CorA}{CorC}|{ParA}{ParC}|{LlaA}{LlaC} {lexeme=yytext(); return T_Symbol;}
+{Myq}{Igual}|{Meq}{Igual}|CorA}{CorC}|{ParA}{ParC}|{LlaA}{LlaC}|{Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|
+{Igual}{Igual}|{Not}{Igual}|{Y}{Y}|{O}{O} {lexeme=yytext(); return T_Symbol;}
 {WHITE}+ {/*Ignore*/}
 {SPACE} {lexeme=yytext();return SPACE;}
 {LINE}+ {lexeme=yytext();return newLine;}
