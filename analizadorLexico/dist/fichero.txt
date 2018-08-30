@@ -1,0 +1,6 @@
+﻿void hacer(){
+	string cadena = "cadena cortada;
+	asdfasdfasdfasdfasdfasdfasdfasdfa
+	//comentario 
+	NewArray[] array;
+} 
