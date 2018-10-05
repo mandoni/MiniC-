@@ -23,10 +23,10 @@ public class Main {
      */
     public static void main(String[] args) {
         //String path = "C:/Users/TonyTaze/Downloads/Universidad/Sexto Ciclo/COMPILADORES/MiniC-/analizadorLexico/src/analizador/Lexer.flex";
-        //(generarLexer(path);
+        //generarLexer(path);
         
         int result;
-        String fileName, path, code="", line, newPath = "";
+        String fileName, code="", path, line, newPath = "";
         JFileChooser selectedfile = new JFileChooser();
         result = selectedfile.showOpenDialog(selectedfile);
         if(result == JFileChooser.APPROVE_OPTION){

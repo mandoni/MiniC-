@@ -1,8 +1,36 @@
 package analizador;
 import static analizador.Token.*;
+import java_cup.runtime.*;
+import java.io.Reader;
 %%
 %class Lexer
 %type Token
+%line
+%column
+%cup 
+%{
+    private Symbol symbol(int type){
+        return new Symbol(type, yyline, yycolumn);
+    }
+
+    private Symbol symbol(int type, Object value){
+        return new Symbol(type, yyline, yycolumn, value);
+    }
+%}
+ALL     =   .*
+ESP     =   [ \t\r]+
+NWL     =   [\n]+
+IDF     =   [a-zA-Z][_0-9a-zA-Z]*
+INT     =   [0-9]+
+HEX     =   ("0x"|"0X")[0-9a-fA-F]+
+DBL     =   [0-9]+"."[0-9]*
+EXP     =   (e|E)("+"|"-")?
+BOOL    =  true|false
+TC      =    "/*" [^*] ~"*/" | "/*" "*"+ "/"
+IC      =    [^\r\n]
+LT      =    \r|\n|\r\n
+LC      =    "//" {IC}* {LT}?
+
 Am = [a]
 Bm = [b]
 Cm = [c]
@@ -13,13 +41,21 @@ Fm = [f]
 Gm = [g]
 Hm = [h]
 Im = [i]
+LMm = [L]
+MMm = [M]
+GMm = [G]
+SMm = [S]
+BMm = [B]
+IMm = [I]
 Km = [k]
 Lm = [l]
 Mm = [m]
 Nm = [n]
 Om = [o]
 Pm = [p]
+PMm = [P]
 Rm = [r]
+RMm = [R]
 Sm = [s]
 Tm = [t]
 Um = [u]
@@ -29,21 +65,17 @@ Xm = [x]
 Ym = [y]
 NMm = [N]
 AMm = [M]
-WHITE=[\r]
 LINE = [\n]
 TAB = [\t]
-SPACE = [ ]
 ALL = [ \t\n\r]
 PC = [;]
-Comment1 = [/]
-Comment2 = [*]
 Suma = [+] 
 Resta = [-]
 Punto = [.] 
 
 Multi = [*] 
 Divi = [/]
-
+Mod = [%]
 Mod = [%]
 Myq = [<]
 Meq = [>] 
@@ -60,61 +92,77 @@ ParA = [(]
 ParC = [)] 
 LlaA = [{]
 LlaC = [}] 
-Comilla = [\"]
 L = [a-zA-Z_]
-Ln = [a-zA-Z]
-Ls = [ \t]
+
 D = [0-9]
 Z = [a-zA-Z0-9]+
-Hex1 = “0x”[0-9|A-F|a-f]+
-Hex2 = “0X”[0-9|A-F|a-f]+
-Des = [0-9]+
-TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+C = [\"]
 
 %{
 public String lexeme;
 %}
 %%
-{Tm}{Rm}{Um}{Em}|{Fm}{Am}{Lm}{Sm}{Em} {lexeme=yytext(); return T_BoolConstant;}
-{NMm}{Em}{Wm}{AMm}{Rm}{Rm}{Am}{Ym} {lexeme=yytext(); return T_Reserved_Word;}
-{Vm}{Om}{Im}{Dm} {lexeme=yytext(); return T_Reserved_Word;}
-{Im}{Nm}{Tm} {lexeme=yytext(); return T_Reserved_Word;}
-{Dm}{Om}{Um}{Bm}{Lm}{Em} {lexeme=yytext(); return T_Reserved_Word;}
-{Bm}{Om}{Om}{Lm} {lexeme=yytext(); return T_Reserved_Word;}
-{Sm}{Tm}{Rm}{Im}{Nm}{Gm} {lexeme=yytext(); return T_Reserved_Word;}
-{Cm}{Lm}{Am}{Sm}{Sm} {lexeme=yytext(); return T_Reserved_Word;}
-{Im}{Nm}{Tm}{Em}{Rm}{Fm}{Am}{Cm}{Em} {lexeme=yytext(); return T_Reserved_Word;}
-{Nm}{Um}{Lm}{Lm} {lexeme=yytext(); return T_Reserved_Word;}
-{Tm}{Hm}{Im}{Sm} {lexeme=yytext(); return T_Reserved_Word;}
-{Em}{Xm}{Tm}{Em}{Nm}{Dm}{Sm} {lexeme=yytext(); return T_Reserved_Word;}
-{Im}{Mm}{Pm}{Lm}{Em}{Mm}{Em}{Nm}{Tm}{Sm} {lexeme=yytext(); return T_Reserved_Word;}
-{Fm}{Om}{Rm} {lexeme=yytext(); return T_Reserved_Word;}
-{Wm}{Hm}{Im}{Lm}{Em} {lexeme=yytext(); return T_Reserved_Word;}
-{Im}{Fm} {lexeme=yytext(); return T_Reserved_Word;}
-{Em}{Lm}{Sm}{Em} {lexeme=yytext(); return T_Reserved_Word;}
-{Rm}{Em}{Tm}{Um}{Rm}{Nm} {lexeme=yytext(); return T_Reserved_Word;}
-{Bm}{Rm}{Em}{Am}{Km} {lexeme=yytext(); return T_Reserved_Word;}
-{NMm}{Em}{Wm} {lexeme=yytext(); return T_Reserved_Word;}
-{Ln}({D}|{L})* {lexeme=yytext(); return T_Identifier;}
-{Z}+{Ln}({D}|{L})* {lexeme=yytext(); return ERROR;}
-({Des}|{Hex1}|{Hex2}){L}+ {lexeme=yytext(); return ERROR;}
-{Comment1}{Comment1}({L}|{Ls}|{D}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|{Comilla}|{DOS}))* {lexeme=yytext(); return T_Comment;}
 
+<YYINITIAL>{
+	{NWL}                       				{return symbol(sym.newline);}
+	{Vm}{Om}{Im}{Dm}                            {return symbol(sym.vip_void);}
+	{Im}{Nm}{Tm}                                {return symbol(sym.vip_int);}
+	{Dm}{Om}{Um}{Bm}{Lm}{Em}                    {return symbol(sym.vip_double);}
+	{Bm}{Om}{Om}{Lm}                            {return symbol(sym.vip_bool);}
+	{Sm}{Tm}{Rm}{Im}{Nm}{Gm}                    {return symbol(sym.vip_string);}
+	{Cm}{Lm}{Am}{Sm}{Sm}                        {return symbol(sym.vip_class);}
+	{Im}{Nm}{Tm}{Em}{Rm}{Fm}{Am}{Cm}{Em}        {return symbol(sym.vip_interface);}
+	{Nm}{Um}{Lm}{Lm}                            {return symbol(sym.vip_null);}
+	{Tm}{Hm}{Im}{Sm}                            {return symbol(sym.vip_this);}
+	{Em}{Xm}{Tm}{Em}{Nm}{Dm}{Sm}                {return symbol(sym.vip_extends);}
+	{Im}{Mm}{Pm}{Lm}{Em}{Mm}{Em}{Nm}{Tm}{Sm}    {return symbol(sym.vip_implements);}
+	{Fm}{Om}{Rm}                                {return symbol(sym.vip_for);}
+	{Wm}{Hm}{Im}{Lm}{Em}                        {return symbol(sym.vip_while);}
+	{Im}{Fm}                                    {return symbol(sym.vip_if);}
+	{Em}{Lm}{Sm}{Em}                            {return symbol(sym.vip_else);}
+	{Rm}{Em}{Tm}{Um}{Rm}{Nm}                    {return symbol(sym.vip_return);}
+	{Bm}{Rm}{Em}{Am}{Km}                        {return symbol(sym.vip_break);}
+	{NMm}{Em}{Wm}                               {return symbol(sym.vip_New);}
+	{NMm}{Em}{Wm}{AMm}{Rm}{Rm}{Am}{Ym}          {return symbol(sym.vip_NewArray);}
+	{PMm}{Rm}{Im}{Nm}{Tm}                       {return symbol(sym.vip_Print);}
+	{RMm}{Em}{Am}{Dm}{IMm}{Nm}{Tm}{Em}{Gm}{Em}{Rm}{return symbol(sym.vip_ReadInteger);}
+	{RMm}{Em}{Am}{Dm}{LMm}{Im}{Nm}{Em}          {return symbol(sym.vip_ReadLine);}
+	{MMm}{Am}{Lm}{Lm}{Om}{Cm}                   {return symbol(sym.vip_Malloc);}
+	{GMm}{Em}{Tm}{BMm}{Ym}{Tm}{Em}              {return symbol(sym.vip_GetByte);}
+	{SMm}{Em}{Tm}{BMm}{Ym}{Tm}{Em}              {return symbol(sym.vip_SetByte);}
+	{BOOL}                                      {return symbol(sym.val_bool);}
+	{IDF}                                       {return symbol(sym.identifier);}
+	{ESP}                                       {return symbol(sym.ERROR);}
+	{INT}                                       {return symbol(sym.num_int);}
+	{HEX}                                       {return symbol(sym.num_hex);}
+	{DBL}|{DBL}{EXP}{INT}                       {return symbol(sym.num_double);}
+	{TC}                                        {return symbol(sym.comment);}
+	{LC}                                        {return symbol(sym.comment);}
+	{Suma}                                      {return symbol(sym.opt_plus);}
+	{Resta}                                     {return symbol(sym.opt_minus);}
+	{Multi}                                     {return symbol(sym.opt_times);}
+	{Divi}                                      {return symbol(sym.opt_divide);}
+	{Mod}                                       {return symbol(sym.opt_mod);}
+	{Myq}                                       {return symbol(sym.opt_lower);}
+	{Myq}{Igual}                                {return symbol(sym.opt_lower_equal);}
+	{Meq}                                       {return symbol(sym.opt_greater);}
+	{Meq}{Igual}                                {return symbol(sym.opt_greater_equal);}
+	{Igual}                                     {return symbol(sym.opt_assign);}
+	{Igual}{Igual}                              {return symbol(sym.opt_equal);}
+	{Not}{Igual}                                {return symbol(sym.opt_not_equal);}
+	{Y}{Y}                                      {return symbol(sym.opt_and);}
+	{O}{O}                                      {return symbol(sym.opt_or);}
+	{Not}                                       {return symbol(sym.opt_not);}
+	{PC}                                        {return symbol(sym.opt_semicolon);}
+	{Punto}                                     {return symbol(sym.opt_dot);}
+	{Coma}                                      {return symbol(sym.opt_coma);}
+	{CorA}                                      {return symbol(sym.opt_left_bracket);}
+	{CorC}                                      {return symbol(sym.opt_right_bracket);}
+	{LlaA}                                      {return symbol(sym.opt_left_brace);}
+	{LlaC}                                      {return symbol(sym.opt_right_brace);}
+	{ParA}                                      {return symbol(sym.opt_left_parentheses);}
+	{ParC}                                      {return symbol(sym.opt_right_parentheses);}
+	{C}{ALL}{C}                                  {return symbol(sym.val_string);}
+	.                                           {return symbol(sym.ERROR);}
 
-{TraditionalComment} {lexeme=yytext(); return T_Comment;}
-{Comment1}{Comment2} .* {lexeme=yytext(); return T_EComment;}
-{Des}{Punto}{D}*|{Des}{Punto}{D}*({Em}|{EMm})({Suma}|{Resta})*{Des}|{Des}{Punto}{D}*({Em}|{EMm}){Des} {lexeme=yytext(); return T_DoubleConstant;}
-{L}+{Des}{Punto}{D}*|{L}+{Des}{Punto}{D}*({Em}|{EMm})({Suma}|{Resta})*{Des}|{L}+{Des}{Punto}{D}*({Em}|{EMm}){Des} {lexeme=yytext(); return ERROR;}
-{Des}{Punto}{D}*{Z}+|{Des}{Punto}{D}*({Em}|{EMm})({Suma}|{Resta})*{Des}{Z}+|{Des}{Punto}{D}*({Em}|{EMm}){Des}{Z}+ {lexeme=yytext(); return ERROR;}
-
-{Des}|{Hex1}|{Hex2} {lexeme=yytext(); return T_IntConstant;}
-{Comilla}({L}|{D}|{Ls}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}))*{LINE} {lexeme=yytext(); return T_EString;}
-{Comilla}({L}|{D}|{Ls}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}))* {lexeme=yytext(); return T_EString;}
-{Comilla}({L}|{D}|{Ls}|({Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}))*{Comilla} {lexeme=yytext(); return T_StringConstant;}
-{Myq}{Igual}|{Meq}{Igual}|CorA}{CorC}|{ParA}{ParC}|{LlaA}{LlaC}|{Suma}|{Resta}|{Multi}|{Divi}|{Mod}|{Meq}|{Myq}|{Igual}|{Not}|{Y}|{O}|{PC}|{Coma}|{Punto}|{CorA}|{CorC}|{LlaA}|{LlaC}|{ParA}|{ParC}|
-{Igual}{Igual}|{Not}{Igual}|{Y}{Y}|{O}{O} {lexeme=yytext(); return T_Symbol;}
-{WHITE}+ {/*Ignore*/}
-{SPACE} {lexeme=yytext();return SPACE;}
-{LINE}+ {lexeme=yytext();return newLine;}
-{TAB}+ {lexeme=yytext();return TAB;}
-. {lexeme=yytext(); return ERROR;}
+}
