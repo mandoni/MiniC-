@@ -1,0 +1,222 @@
+package analizador
+import java_cup.runtime.*;
+import java.io.FileReader;
+
+parser code {:
+	public void report_error(String message, Object info){
+		StringBuilder m = new StringBuilder("Error");
+		if(info instanceof java_cup.runtime.Symbol){
+			java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+			if(s.left >= 0){
+				m.append(" in line "+ (s.left+1));
+				if(s.right>=0)
+					m.append(", column "+(s.right+1)); 
+			}
+		}
+		m.append(" : "+message);
+		System.err.println(m);
+	}
+
+	public void report_fatal_error(String message, Object info){
+		report_error(message, info);
+		System.exit(1);
+	}
+
+	public static void main(String[] args){
+		try{
+			AnalizadorSintactico analizer = new AnalizadorSintactico(new AnalizadorLexico(new FileReader(args[0])));
+			Object result = analizer.parse().value;
+			System.out.println("\n***Result finales***");
+		}
+		catch(Exception ex){
+			ex.printStackTrace(); 
+		}
+	}
+:};
+
+terminal			vip_void, vip_int, vip_double, vip_bool, vip_string, vip_class, vip_interface, vip_null, vip_this, vip_extends;
+terminal			vip_implements, vip_for, vip_while, vip_if, vip_else, vip_return, vip_break, vip_New, vip_NewArray, vip_Print;
+terminal 			vip_ReadInteger, vip_ReadLine, vip_Malloc, vip_GetByte, vip_SetByte, sym.identifier, opt_plus, opt_minus, opt_times;
+terminal			opt_divide, opt_mod, opt_lower, opt_lower_equal, opt_greater, opt_greater_equal, opt_assign, opt_equal, opt_not_equal;
+terminal 			opt_and, opt_or, opt_not, opt_semicolon, opt_dot, opt_coma, opt_left_bracket, opt_right_bracket, opt_left_brace;
+terminal 			opt_right_brace, opt_left_parentheses, opt_right_parentheses;
+terminal Boolean 	val_bool;
+terminal Integer 	num_hex;
+terminal Double 	num_double, num_int;
+terminal String 	val_string;
+
+non terminal Object 	PROGRAM, DECL, VAR_DECL, VARIABLE, VARIABLE_PLUS, TYPE, FUNCTION_DECL, FORMALS, CLASS_DECL, IMPLEMENTS, 
+						IDENTIFIER_PLUS, FIELD, INTERFACE_DECL, PROTOTYPE, STMT_BLOCK, VARS, STMTS, STATEMENT, IF_STMT, WHILE_STMT, 
+						FOR_STMT, RETURN_STMT, BREAK_STMT, PRINT_STMT, EXPRESSION_Q, EXPRESSION_PLUS, EXPRESSION, RRR, SSS, PPP, 
+						TTT, VALUE, CALL, LIB_CALL, ACTUAL, CONST;
+
+PROGRAM ::= DECL               
+      	| DECL PROGRAM       
+      ;
+
+DECL  ::= VAR_DECL            
+      | FUNCTION_DECL       
+      | CLASS_DECL          
+      | INTERFACE_DECL      
+      ;
+
+VAR_DECL    ::= VARIABLE opt_semicolon                  
+      ;
+
+VARIABLE    ::= TYPE identifier                         
+      ;
+
+VARIABLE_PLUS::= VARIABLE opt_coma VARIABLE_PLUS         
+      | VARIABLE                                
+
+TYPE      ::= vip_int                                 
+      | vip_double                              
+      | vip_bool  
+      | vip_string                              
+      | TYPE opt_left_bracket opt_right_bracket 
+      ;
+
+FUNCTION_DECL ::= TYPE identifier opt_left_parentheses FORMALS opt_right_parentheses STMT_BLOCK             
+      | vip_void identifier opt_left_parentheses FORMALS opt_right_parentheses STMT_BLOCK         
+      ;
+
+FORMALS ::= VARIABLE_PLUS   
+      | %empty          
+      ;
+
+CLASS_DECL  ::= vip_class identifier EXTENDS IMPLEMENTS IDENTIFIER_PLUS opt_left_brace FIELD opt_right_brace  
+      ;
+
+EXTENDS ::= vip_extends identifier      
+      | %empty                      
+      ;
+
+IMPLEMENTS::= vip_implements IDENTIFIER_PLUS    
+      | %empty
+      ;
+
+IDENTIFIER_PLUS  ::= identifier opt_coma IDENTIFIER_PLUS     
+      | identifier                              
+      ;
+
+FIELD ::= VAR_DECL              
+      | FUNCTION_DECL         
+      ;
+
+INTERFACE_DECL    ::= vip_interface identifier opt_left_brace PROTOTYPE opt_right_brace   
+      ;
+
+PROTOTYPE ::= TYPE identifier opt_left_parentheses FORMALS opt_right_parentheses opt_semicolon              
+      | vip_void identifier opt_left_parentheses FORMALS opt_right_parentheses opt_semicolon          
+      ;
+
+STMT_BLOCK  ::= opt_left_brace VARS STMTS opt_right_brace  
+      ;
+
+VARS  ::= VAR_DECL VARS   
+      | %empty          
+      ;
+
+STMTS ::= STATEMENT STMTS   
+      | %empty            
+      ;
+
+STATEMENT   ::= EXPRESSION_Q opt_semicolon  
+      | IF_STMT             
+      | WHILE_STMT          
+      | FOR_STMT            
+      | BREAK_STMT          
+      | RETURN_STMT         
+      | PRINT_STMT          
+      | STMT_BLOCK          
+      ;
+
+IF_STMT     ::= vip_if opt_left_parentheses EXPRESSION opt_right_parentheses STATEMENT                        
+      | vip_if opt_left_parentheses EXPRESSION opt_right_parentheses STATEMENT vip_else STATEMENT     
+      ;
+
+
+WHILE_STMT  ::= vip_while opt_left_parentheses EXPRESSION opt_right_parentheses STATEMENT     
+      ;
+
+FOR_STMT  ::= vip_for opt_left_parentheses EXPRESSION_Q opt_semicolon EXPRESSION opt_semicolon EXPRESSION_Q opt_right_parentheses STATEMENT         
+      ;
+
+RETURN_STMT ::= vip_return EXPRESSION_Q opt_semicolon    
+      ;
+
+BREAK_STMT ::= vip_break opt_semicolon     
+      ;
+
+PRINT_STMT  ::= vip_Print opt_left_parentheses EXPRESSION_PLUS opt_right_parentheses opt_semicolon     
+      ;
+
+EXPRESSION_Q  ::= EXPRESSION      
+      | %empty          
+      ;
+
+EXPRESSION_PLUS  ::= EXPRESSION opt_coma EXPRESSION_PLUS     
+      | EXPRESSION                               
+      ;
+
+EXPRESSION  ::= VALUE opt_assign RRR 
+      | RRR 
+      ;
+RRR::= RRR opt_lower SSS    
+      | RRR opt_lower_equal SSS 
+      | RRR opt_greater SSS 
+      | RRR opt_greater_equal SSS 
+      | RRR opt_equal SSS 
+      | RRR opt_not_equal SSS 
+      | RRR opt_and SSS 
+      | RRR opt_or SSS 
+      | SSS 
+      ;
+SSS::= SSS opt_plus PPP 
+      | SSS opt_minus PPP 
+      | opt_minus PPP 
+      | opt_not PPP 
+      | PPP 
+      ;
+
+PPP::= PPP opt_times TTT 
+      | PPP opt_divide TTT 
+      | PPP opt_mod TTT 
+      | TTT 
+      ;
+
+TTT::= vip_this 
+      | CONST 
+      | CALL 
+      | VALUE 
+      | vip_New opt_left_parentheses identifier opt_right_parentheses 
+      | vip_NewArray opt_left_parentheses EXPRESSION opt_coma TYPE opt_right_parentheses 
+      | vip_ReadInteger opt_left_parentheses opt_right_parentheses 
+      | vip_ReadLine opt_left_parentheses opt_right_parentheses 
+      | vip_Malloc opt_left_parentheses EXPRESSION opt_right_parentheses 
+
+VALUE ::= identifier                                                      
+      | EXPRESSION opt_dot identifier                                   
+      | EXPRESSION opt_left_bracket EXPRESSION opt_right_bracket        
+      ;
+
+CALL  ::= identifier opt_left_parentheses ACTUAL opt_right_parentheses                        
+      | EXPRESSION opt_dot identifier opt_left_parentheses ACTUAL opt_right_parentheses     
+      | EXPRESSION opt_dot LIB_CALL opt_left_parentheses ACTUAL opt_right_parentheses       
+      ;
+
+LIB_CALL  ::= vip_GetByte opt_left_parentheses EXPRESSION opt_right_parentheses                         
+      | vip_SetByte opt_left_parentheses EXPRESSION opt_coma EXPRESSION opt_right_parentheses     
+      ;
+
+ACTUAL  ::= EXPRESSION_PLUS       
+      | %empty                
+      ;
+
+CONST ::= num_int     
+      | num_hex     
+      | num_double  
+      | val_bool    
+      | val_string  
+      | vip_null        
+;

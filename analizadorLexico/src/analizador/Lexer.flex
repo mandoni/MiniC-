@@ -92,10 +92,7 @@ ParA = [(]
 ParC = [)] 
 LlaA = [{]
 LlaC = [}] 
-L = [a-zA-Z_]
 
-D = [0-9]
-Z = [a-zA-Z0-9]+
 C = [\"]
 
 %{
@@ -104,7 +101,7 @@ public String lexeme;
 %%
 
 <YYINITIAL>{
-	{NWL}                       				{return symbol(sym.newline);}
+	{NWL}                       				{	}
 	{Vm}{Om}{Im}{Dm}                            {return symbol(sym.vip_void);}
 	{Im}{Nm}{Tm}                                {return symbol(sym.vip_int);}
 	{Dm}{Om}{Um}{Bm}{Lm}{Em}                    {return symbol(sym.vip_double);}
@@ -130,12 +127,12 @@ public String lexeme;
 	{MMm}{Am}{Lm}{Lm}{Om}{Cm}                   {return symbol(sym.vip_Malloc);}
 	{GMm}{Em}{Tm}{BMm}{Ym}{Tm}{Em}              {return symbol(sym.vip_GetByte);}
 	{SMm}{Em}{Tm}{BMm}{Ym}{Tm}{Em}              {return symbol(sym.vip_SetByte);}
-	{BOOL}                                      {return symbol(sym.val_bool);}
+	{BOOL}                                      {return symbol(sym.val_bool, new Boolean(yytext()));}
 	{IDF}                                       {return symbol(sym.identifier);}
-	{ESP}                                       {return symbol(sym.ERROR);}
-	{INT}                                       {return symbol(sym.num_int);}
-	{HEX}                                       {return symbol(sym.num_hex);}
-	{DBL}|{DBL}{EXP}{INT}                       {return symbol(sym.num_double);}
+	{ESP}                                       {	}
+	{INT}                                       {return symbol(sym.num_int, new Double(yytext()));}
+	{HEX}                                       {return symbol(sym.num_hex, new Integer(yytext()));}
+	{DBL}|{DBL}{EXP}{INT}                       {return symbol(sym.num_double, new Double(yytext()));}
 	{TC}                                        {return symbol(sym.comment);}
 	{LC}                                        {return symbol(sym.comment);}
 	{Suma}                                      {return symbol(sym.opt_plus);}
@@ -162,7 +159,7 @@ public String lexeme;
 	{LlaC}                                      {return symbol(sym.opt_right_brace);}
 	{ParA}                                      {return symbol(sym.opt_left_parentheses);}
 	{ParC}                                      {return symbol(sym.opt_right_parentheses);}
-	{C}{ALL}{C}                                  {return symbol(sym.val_string);}
-	.                                           {return symbol(sym.ERROR);}
-
+	{C}{ALL}{C}                                 {return symbol(sym.val_string, new String(yytext()));}
 }
+
+	[^]                                           {throw new(Error("Entrada Ilegal <"+yytext()+">"));}
