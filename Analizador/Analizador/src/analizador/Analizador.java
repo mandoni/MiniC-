@@ -97,11 +97,11 @@ public class Analizador {
                         //===================================================
                         for(Yytoken element: lexicalErrors){
                             if(element.error){
-                                System.out.println("[L]" + element + "\r\n");
+                                System.out.println(element + "\r\n");
                             }
                         }
                         for(String element: syntacticErrors){
-                            System.out.println("[S]" + element + "\r\n");
+                            System.out.println(element + "\r\n");
                         }
 
                         if((!lexErrors) &&(syntacticErrors.isEmpty())){
