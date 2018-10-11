@@ -1,0 +1,71 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package analizador;
+
+/**
+ *
+ * @author TonyTaze
+ */
+public enum Token {
+    ERROR,
+    comment,
+    vip_while,
+    vip_void, 
+    vip_int, 
+    vip_double,
+    vip_bool,
+    vip_string,
+    vip_class,
+    vip_interface,
+    vip_null,
+    vip_this,
+    vip_extends,
+    vip_implements,
+    vip_for,
+    Vip_while,
+    vip_if,
+    vip_else,
+    vip_return,
+    vip_break,
+    vip_New,
+    vip_NewArray,
+    vip_Print,
+    vip_ReadInteger,
+    vip_ReadLine,
+    vip_Malloc,
+    vip_GetByte,
+    vip_SetByte,
+    val_bool,
+    identifier,
+    num_int,
+    num_hex,
+    num_double,
+    opt_plus,
+    opt_minus,
+    opt_times,
+    opt_divide,
+    opt_mod,
+    opt_lower,
+    opt_lower_equal,
+    opt_greater,
+    opt_greater_equal,
+    opt_assign,
+    opt_equal,
+    opt_not_equal,
+    opt_and,
+    opt_or,
+    opt_not,
+    opt_semicolon,
+    opt_dot,
+    opt_coma,
+    opt_left_bracket,
+    opt_right_bracket,
+    opt_left_brace,
+    opt_right_brace,
+    opt_left_parentheses,
+    opt_right_parentheses,
+    val_string,
+}

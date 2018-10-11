@@ -1,8 +1,11 @@
-package ejemplocup;
+    package ejemplocup;
 import java_cup.runtime.*;
 import java.io.FileReader;
 
 parser code {:
+
+    Parser(AnalizadorLexico s){ this.s=s; }
+
       public void report_error(String message, Object info){
             StringBuilder m = new StringBuilder("Error");
             if(info instanceof java_cup.runtime.Symbol){
@@ -24,7 +27,8 @@ parser code {:
 
       public static void main(String[] args){
             try{
-                  AnalizadorSintactico analizer = new AnalizadorSintactico(new AnalizadorLexico(new FileReader(args[0])));
+                  AnalizadorSintactico analizer = new AnalizadorSintactico();
+                  analizer.Parser(new AnalizadorLexico(args[0]));
                   Object result = analizer.parse().value;
                   System.out.println("\n***Result finales***");
             }
@@ -32,7 +36,9 @@ parser code {:
                   ex.printStackTrace(); 
             }
       }
-:};
+:}
+
+scan with {: return s.next_token(); :};
 
 terminal                vip_void, vip_int, vip_double, vip_bool, vip_string, vip_class, vip_interface, vip_null, vip_this, vip_extends;
 terminal                vip_implements, vip_for, vip_while, vip_if, vip_else, vip_return, vip_break, vip_New, vip_NewArray, vip_Print;
