@@ -1,0 +1,2 @@
+analizador.Yytoken
+analizador.LexicalScanner

@@ -10,7 +10,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import javax.swing.JFileChooser;
 import java.util.Scanner;
 
@@ -23,9 +26,14 @@ public class Analizador {
     /**
      * @param args the command line arguments
      */
+    public static Hashtable<String, String> symbolTable = new Hashtable<String, String>();
+    private static String path2="text.txt", fileName="";
+    
     public static void main(String[] args) {
         // TODO code application logic here
         Scanner s = new Scanner(System.in);
+        Diccionario exec = new Diccionario();
+        
         int valor = 0;
         do{
             System.out.println("Insertar numero\n"
@@ -63,7 +71,7 @@ public class Analizador {
                     
                 case 3:
                     //=======================================================
-                    String fileName, code="", path2="text.txt", line, newPath = "";
+                    String code="", line, newPath = "";
                     File file2 = new File("test.txt");
                     JFileChooser selectedfile = new JFileChooser();
                     int result = selectedfile.showOpenDialog(selectedfile);
@@ -88,6 +96,9 @@ public class Analizador {
 
                     try {
                         reader = new BufferedReader(new FileReader(path2));
+                        String fullCode = getIncludes(reader, path2.split(fileName)[0]);
+                        Reader input = new StringReader(fullCode);
+                        reader = new BufferedReader(input);
                         LexicalScanner lexer = new LexicalScanner(reader);
                         Sintactico parser = new Sintactico(lexer);
                         parser.parse();
@@ -122,6 +133,50 @@ public class Analizador {
         }while(valor != 4);
         
         
+    }
+    
+    private static String getIncludes(BufferedReader code, String path){
+        String fullCode = "", line, name;
+        String[] lineaSeparada;
+        try{
+            while((line = code.readLine()) != null){
+                lineaSeparada = line.trim().split(" ");
+                if(lineaSeparada[0].compareTo("#include")==0){
+                    name = Espacio(lineaSeparada);
+                    fullCode += getLinesIncude((path+name));
+                }
+                else{
+                    fullCode += line+"\n";
+                }
+            }
+        }catch(IOException e ){
+            System.out.println("\033[31m***I/O EXEPTION***\n"+e);
+        }
+        
+        return fullCode;
+    }
+    
+    private static String Espacio(String[] line){
+        int x = 0;
+        for(int i = 1; i<line.length; i++){
+            if(line[i]!=" "){
+                x = i;
+                break;
+            }
+        }
+        return line[x].split("<")[1].split(">")[0];
+    }
+    
+    private static String getLinesIncude(String path){
+        String lines = ""; 
+        try{
+            BufferedReader reader = new BufferedReader(new FileReader(path));
+            String line;
+            return getIncludes(reader, path2.split(fileName)[0]);
+        }catch(IOException e){
+            System.out.println("\033[31m***I/O EXEPTION***\n"+e);
+        }
+        return lines;
     }
     
 }
