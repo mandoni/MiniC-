@@ -26,7 +26,7 @@ public class Analizador {
     /**
      * @param args the command line arguments
      */
-    public static Hashtable<String, String> symbolTable = new Hashtable<String, String>();
+   
     private static String path2="text.txt", fileName="";
     
     public static void main(String[] args) {

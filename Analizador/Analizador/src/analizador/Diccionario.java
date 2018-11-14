@@ -31,6 +31,22 @@ public class Diccionario {
         */
     }
     
+    public boolean ExistsFunction(Hashtable<String, symbol> table, String lexeme){
+         for(Map.Entry<String, symbol> entry : table.entrySet()) {
+            if(entry.getKey() == lexeme)
+                return true;
+        }
+        return false;
+    }
+    
+    public symbol FindFunction(Hashtable<String, symbol> table, String lexeme){
+        for(Map.Entry<String, symbol> entry : table.entrySet()) {
+            if(entry.getKey() == lexeme)
+                return entry.getValue();
+        }
+        return new symbol("", "", -1);
+    }
+    
     public symbol FindSymbol(Hashtable<String, symbol> table, String lexeme, int contexto, int cMin){
         for(Map.Entry<String, symbol> entry : table.entrySet()) {
             if(entry.getKey() == lexeme && (entry.getValue().ambito <= contexto && entry.getValue().ambito >= cMin))

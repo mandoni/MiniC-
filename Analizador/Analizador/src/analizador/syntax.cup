@@ -1,10 +1,16 @@
 package analizador;
-
+//symbolTable.put(lexeme, new symbol("name", "tipo", ambito))
 //Java Libraries
 import java.util.ArrayList;
 import java_cup.runtime.Symbol;
-
+{:
+    public  Hashtable<String, String> symbolTable = new Hashtable<String, String>();
+    public Diccionario exec = new Diccionario();
+    public int context = 0, cMin = 0;
+    public String parametros = "";
+:}
 parser code {:
+    
     public ArrayList<String> SyntacticErrors = new ArrayList<String>();
     public int count = 0;
 
@@ -60,25 +66,114 @@ Decl ::=  VariableDecl|
 
 VariableDecl ::= Variable pyc;
 
-Variable ::= Type ident;
+Variable ::= Type:tipo ident:name
+            {:
+                if(exec.AlreadyExists(symbolTable, name.toString(), context, cMin)){
+                    System.out.println("\033[31m*** Error: Variable name: "+ name.toString() +" is already exists***");
+                }
+                else{
+                    symbolTable.put(name.toString(), new symbol(name.toString(), tipo.toString(), ambito));
+                }
+                RESULT = tipo;
+            :};
 
-Type ::=  INT
-        |DOUBLE
-        |BOOL
-        |STRING
-        |ident
-        |Type Brackets;
+Type ::=  INT                   {: RESULT = new String("int"); :}
+        |DOUBLE                 {: RESULT = new String("double"); :}
+        |BOOL                   {: RESULT = new String("bool"); :}
+        |STRING                 {: RESULT = new String("string"); :}
+        |ident:name             {: RESULT = new String(name.toString()); :}
+        |Type:tipo Brackets     {: RESULT = new String(tipo.toString() + "[]"); :} 
+        ;
 
-FunctionDecl ::= Type ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
-                |sVoid ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
-                |Type ident Parenthesis StmtBlock
-                |sVoid ident Parenthesis StmtBlock;
+FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis Formals:param ClosedParenthesis StmtBlock
+                {:
+                    if(exec.ExistsFunction(symbolTable, nombre.toString())){
+                        System.out.println("\033[31m***Error: Function name: "+ nombre.toString() +" is already exists***");
+                    }
+                    else{
+                        symbol s = new symbol(nombre.toString(), "function", context);
+                        context++;
+                        cMin = context;
+                        String[] p = parametros.split("$");
+                        parametros = "";
+                        s.AddFunction(tipo.toString(), p.length-1, p);
+                        symbolTable.put(nombre.toString(), s);
+                    }
+                :}
+                |sVoid ident:nombre OpeningParenthesis Formals:param ClosedParenthesis StmtBlock
+                 {:
+                    if(exec.ExistsFunction(symbolTable, nombre.toString())){
+                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
+                    }
+                    else{
+                        symbol s = new symbol(nombre.toString(), "method", context);
+                        context++;
+                        cMin = context;
+                        String[] p = parametros.split("$");
+                        parametros = "";
+                        s.AddFunction("void", p.length-1, p);
+                        symbolTable.put(nombre.toString(), s);
+                    }
+                :}
+                |Type:tipo ident:nombre Parenthesis StmtBlock
+                {:
+                    if(exec.ExistsFunction(symbolTable, nombre.toString())){
+                        System.out.println("\033[31m***Error: Function name: "+ nombre.toString() +" is already exists***");
+                    }
+                    else{
+                        symbol s = new symbol(nombre.toString(), "function", context);
+                        context++;
+                        cMin = context;
+                        s.AddFunction(tipo.toString(), 0, new String[0]);
+                        symbolTable.put(nombre.toString(), s);
+                    }
+                :}
+                |sVoid ident Parenthesis StmtBlock
+                {:
+                    if(exec.ExistsFunction(symbolTable, nombre.toString())){
+                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
+                    }
+                    else{
+                        symbol s = new symbol(nombre.toString(), "method", context);
+                        context++;
+                        cMin = context;
+                        s.AddFunction("void", 0, new String[0]);
+                        symbolTable.put(nombre.toString(), s);
+                    }
+                :}
+                ;
 
-Formals ::= Variable RepeatVariable| /* epsilon */;
-RepeatVariable ::= comma Variable RepeatVariable| /* epsilon */;
+Formals ::= Variable:tipo RepeatVariable                {: parametros+=tipo+"$"; RESULT = parametros :}
+            | /* epsilon */;
+RepeatVariable ::= comma Variable:tipo RepeatVariable   {: parametros+= tipo+"$"; RESULT = parametros :}
+            | /* epsilon */;
 
-ClassDecl ::= sClass ident ExtIdent ImpIdent OpeningCurlyBracket RepeatableField ClosedCurlyBracket
-            | sClass ident ExtIdent ImpIdent CurlyBrackets;
+ClassDecl ::= sClass ident:nombre ExtIdent ImpIdent OpeningCurlyBracket RepeatableField ClosedCurlyBracket
+            {:  
+                if(exec.ExistsFunction(symbolTable, nombre)){
+                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
+                    }
+                    else{
+                        symbol s = new symbol(nombre.toString(), "class", context);
+                        context++;
+                        cMin = context;
+                        s.AddFunction("class", 0, new String[0]);
+                        symbolTable.put(nombre.toString(), s);
+                    } 
+            :}
+            | sClass ident:nombre ExtIdent ImpIdent CurlyBrackets
+            {:
+                 if(exec.ExistsFunction(symbolTable, nombre)){
+                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
+                    }
+                    else{
+                        symbol s = new symbol(nombre.toString(), "class", context);
+                        context++;
+                        cMin = context;
+                        s.AddFunction("class", 0, new String[0]);
+                        symbolTable.put(nombre.toString(), s);
+                    } 
+            :};
 ExtIdent ::= sExtends ident| /* epsilon */;
 ImpIdent ::= sImplements MultipleIdents| /* epsilon */;
 MultipleIdents ::= ident|MultipleIdents comma ident;
