@@ -93,6 +93,7 @@ private String isError(String token, int line, int column, int length, String er
 /*Macro Definition*/
 
 /* Reserved words */
+Constant = ("constant")
 Int = ("int")
 Double = ("double")
 Bool = ("bool")
@@ -188,6 +189,7 @@ Dot= (".")
 
 {UnrecognizedCharacters}    {this.tokens.add(new Yytoken(yytext(), yyline, yycolumn, "Unrecognized char", true)); /* It's error so it doesn't return nothing */}
 /*  Reserved Words  */
+{Constant}                  {this.tokens.add(new Yytoken(yytext(), yyline, yycolumn, this.typeReservedWords(yytext()), false)); return symbol(sym.Constante);}
 {Int}                       {this.tokens.add(new Yytoken(yytext(), yyline, yycolumn, this.typeReservedWords(yytext()), false)); return symbol(sym.INT);}
 {Double}                    {this.tokens.add(new Yytoken(yytext(), yyline, yycolumn, this.typeReservedWords(yytext()), false)); return symbol(sym.DOUBLE);}
 {Bool}                      {this.tokens.add(new Yytoken(yytext(), yyline, yycolumn, this.typeReservedWords(yytext()), false)); return symbol(sym.BOOL);}

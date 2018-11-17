@@ -11,14 +11,13 @@ package analizador;
  */
 public class symbol {
     
+    public boolean constante = false;
     public String lexeme;
     public String value;
     public String type;
     public String rType;
     public int ambito; 
-    public int nParametros;
-    public String[] parametros;  
-    
+    public String parametros;
     symbol(String lexeme, String type, int ambito){
         this.lexeme = lexeme;
         this.type = type; 
@@ -29,12 +28,8 @@ public class symbol {
         this.value = value;
     }
     
-    public void AddFunction (String rType, int nParametros, String[] parametros){
+    public void AddFunction (String rType, String parametros){
         this.rType = rType;
-        this.nParametros = nParametros;
-        this.parametros=new String[nParametros];
-        for(int i = 0; i<nParametros; i++){
-            this.parametros[i] = parametros[i];
-        }
+        this.parametros =parametros;
     }
 }

@@ -6,14 +6,18 @@
 package analizador;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JFileChooser;
 import java.util.Scanner;
 
@@ -33,7 +37,9 @@ public class Analizador {
         // TODO code application logic here
         Scanner s = new Scanner(System.in);
         Diccionario exec = new Diccionario();
-        
+        Hashtable<String, symbol> symbolTable = new Hashtable<String, symbol>();
+        List<logs> Log = new  ArrayList<logs>();
+
         int valor = 0;
         do{
             System.out.println("Insertar numero\n"
@@ -45,20 +51,24 @@ public class Analizador {
             
             switch(valor){
                 case 1:
-                    String path = "C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\Analizador\\Analizador\\src\\analizador\\Lexer.flex";
+                    File f = new File("C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\MiniC-\\Analizador\\Analizador\\src\\analizador\\LexicalScanner.java");
+                    f.delete();
+                    String path = "C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\MiniC-\\Analizador\\Analizador\\src\\analizador\\Lexer.flex";
                     File file=new File(path);
                     JFlex.Main.generate(file);
                     break;
                 case 2:
+                    File t = new File("C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\MiniC-\\Analizador\\Analizador\\src\\analizador\\Sintactico.java");
+                    t.delete();
                     String opciones[] = new String[7]; 
                     //Seleccionamos la opción de dirección de destino
                     opciones[0] = "-destdir";
-                    opciones[1] = "C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\Analizador\\Analizador\\src\\analizador";
+                    opciones[1] = "C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\MiniC-\\Analizador\\Analizador\\src\\analizador";
                     opciones[2] = "-symbols"; 
                     opciones[3] = "sym";
                     opciones[4] = "-parser";         
                     opciones[5] = "Sintactico"; 
-                    opciones[6] = "C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\Analizador\\Analizador\\src\\analizador\\syntax.cup"; 
+                    opciones[6] = "C:\\Users\\TonyTaze\\Downloads\\Universidad\\Sexto Ciclo\\COMPILADORES\\MiniC-\\Analizador\\Analizador\\src\\analizador\\syntax.cup"; 
                     try 
                     {
                         java_cup.Main.main(opciones);
@@ -104,8 +114,11 @@ public class Analizador {
                         parser.parse();
                         lexicalErrors = lexer.tokens;
                         syntacticErrors = parser.SyntacticErrors;
+                        symbolTable = parser.getHashTable();
+                        Log = parser.getLog();
                         reader.close();
                         //===================================================
+
                         for(Yytoken element: lexicalErrors){
                             if(element.error){
                                 System.out.println(element + "\r\n");
@@ -113,6 +126,49 @@ public class Analizador {
                         }
                         for(String element: syntacticErrors){
                             System.out.println(element + "\r\n");
+                        }
+                        
+                         File tabla = new File(path2+"\\tablaDeSimbolos.txt");
+                        BufferedWriter bw;
+                        if(tabla.exists()){
+                           bw = new BufferedWriter(new FileWriter(tabla));
+                           bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                           for(Map.Entry<String, symbol> entry :symbolTable.entrySet()){
+                               symbol sy = entry.getValue();
+                               //String syTipo = (sy.constante?"const "+sy.type:sy.type);
+                               bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.ambito);
+                           }
+                           bw.close();
+                        }else{
+                            tabla.createNewFile();
+                            bw = new BufferedWriter(new FileWriter(tabla));
+                            bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                            for(Map.Entry<String, symbol> entry :symbolTable.entrySet()){
+                                symbol sy = entry.getValue();
+                                //String syTipo = (sy.constante?"const "+sy.type:sy.type);
+                                bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.ambito);
+                            }
+                           bw.close();
+                        }
+                        
+                        tabla = new File(path2+"\\logTabla.txt");
+                        if(tabla.exists()){
+                           bw = new BufferedWriter(new FileWriter(tabla));
+                           bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                           for(logs sy : Log){
+                                //String syTipo = (sy.constante?"const "+sy.type:sy.type);
+                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.ambito);
+                            }
+                           bw.close();
+                        }else{
+                            tabla.createNewFile();
+                            bw = new BufferedWriter(new FileWriter(tabla));
+                            bw.write("Operación\t\t\tSimbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                            for(logs sy : Log){
+                                //String syTipo = (sy.constante?"const "+sy.type:sy.type);
+                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.ambito);
+                            }
+                           bw.close();
                         }
 
                         if((!lexErrors) &&(syntacticErrors.isEmpty())){
