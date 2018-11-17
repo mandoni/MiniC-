@@ -76,7 +76,7 @@ Decl ::=  VariableDecl|
 
 VariableDecl ::= Variable pyc;
 
-Variable ::= /*Constante Type:tipo ident:name assignment Constant:value 
+Variable ::= Constante Type:tipo ident:name assignment Constant:value 
             {:
                 if(exec.AlreadyExists(Sintactico.symbolTable, name.toString(), Sintactico.ambito, Sintactico.cMin)){
                     System.out.println("\033[31m*** Error: Variable name: "+ name.toString() +" is already exists***");
@@ -90,7 +90,7 @@ Variable ::= /*Constante Type:tipo ident:name assignment Constant:value
                 }
                 RESULT = tipo;
             :}
-            |*/Type:tipo ident:name
+            |Type:tipo ident:name
             {:
                 if(exec.AlreadyExists(Sintactico.symbolTable, name.toString(), Sintactico.ambito, Sintactico.cMin)){
                     System.out.println("\033[31m*** Error: Variable name: "+ name.toString() +" is already exists***");
@@ -187,7 +187,7 @@ ClassDecl ::= sClass ident:nombre ExtIdent ImpIdent
                         Sintactico.parametros = "";
                     } 
             :}
-            OpeningCurlyBracket {: Sintactico.ambito++; :} RepeatableField ClosedCurlyBracket /*{: exec.DeleteAmbit(Sintactico.symbolTable, Sintactico.ambito); Sintactico.ambito--;  :}*/
+            OpeningCurlyBracket {: Sintactico.ambito++; :} RepeatableField ClosedCurlyBracket {: exec.DeleteAmbit(Sintactico.symbolTable, Sintactico.ambito); Sintactico.ambito--;  :}
             
             | sClass ident:nombre ExtIdent ImpIdent CurlyBrackets
             {:
