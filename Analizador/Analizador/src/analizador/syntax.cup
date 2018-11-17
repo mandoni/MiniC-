@@ -9,10 +9,6 @@ import java.util.List;
 parser code {:
     public static Hashtable<String, symbol> symbolTable = new Hashtable<String, symbol>();
     public static List<logs> Log = new  ArrayList<logs>();
-
-    public static int context = 0, cMin = 0, ambito = 0;
-    public static String parametros = "";
-
     
     public ArrayList<String> SyntacticErrors = new ArrayList<String>();
     public int count = 0;
@@ -38,15 +34,20 @@ parser code {:
      }
 :}
 
+action code {:
+                Diccionario exec = new Diccionario();
+
+                public static int context = 0, cMin = 0, ambito = 0;
+                public static String parametros = "";
+            :}
+
 /*  Symbol Lists  */
 
 // Terminals
-terminal    pyc, INT, DOUBLE, BOOL, STRING, OpeningBracket, ClosedBracket, OpeningParenthesis, ClosedParenthesis, sVoid, comma, sClass, OpeningCurlyBracket, ClosedCurlyBracket, sExtends, sImplements, sInterface,
-cIf, cElse, lWhile, lFor, sReturn, sBreak, sPrint, assignment, sThis, sNew, sNewArray, sReadInteger, sMalloc, dot, sGetByte, sSetByte, sNull, sReadLine, boolConstant,
-ComparisonOperators, equality, negative, sum, ArithmeticOperators, denial, Brackets, and, or, Parenthesis, CurlyBrackets, Constante;
-terminal    Integer     integerConstant;
-terminal    String      ident, stringConstant;
-terminal    Double      doubleConstant; 
+terminal ident, pyc, INT, DOUBLE, BOOL, STRING, OpeningBracket, ClosedBracket, OpeningParenthesis, ClosedParenthesis, sVoid, comma, sClass, OpeningCurlyBracket, ClosedCurlyBracket, sExtends, sImplements, sInterface,
+cIf, cElse, lWhile, lFor, sReturn, sBreak, sPrint, assignment, sThis, sNew, sNewArray, sReadInteger, sMalloc, dot, sGetByte, sSetByte, sNull, sReadLine, integerConstant, doubleConstant, boolConstant, 
+stringConstant, ComparisonOperators, equality, negative, sum, ArithmeticOperators, denial, Brackets, and, or, Parenthesis, CurlyBrackets;
+ 
 // Non Terminals
 non terminal Program, ProgramA, Decl, VariableDecl, VariableDeclAux, Variable, Type, FunctionDecl, Formals, RepeatVariable, ClassDecl, ExtIdent, ImpIdent, MultipleIdents,
 Field, RepeatableField, InterfaceDecl, Prototype, RepeatablePrototype, StmtBlock, Stmt, StmtAux, IfStmt, ElseStmt, WhileStmt, ForStmt, ReturnStmt, BreakStmt, PrintStmt, Expr, ExprOZ, 
@@ -76,176 +77,37 @@ Decl ::=  VariableDecl|
 
 VariableDecl ::= Variable pyc;
 
-Variable ::= Constante Type:tipo ident:name assignment Constant:value 
-            {:
-                if(exec.AlreadyExists(Sintactico.symbolTable, name.toString(), Sintactico.ambito, Sintactico.cMin)){
-                    System.out.println("\033[31m*** Error: Variable name: "+ name.toString() +" is already exists***");
-                }
-                else{
-                    symbol s = new symbol(name, tipo.toString(), Sintactico.ambito);
-                    s.constante = true; 
-                    s.SymbolValue(value.toString());
-                    Sintactico.symbolTable.put(name.toString(), new symbol(name.toString(), tipo.toString(), Sintactico.ambito));
-                    Sintactico.Log.add(new logs("Insert", name.toString(), tipo.toString(), value.toString(), Sintactico.ambito));
-                }
-                RESULT = tipo;
-            :}
-            |Type:tipo ident:name
-            {:
-                if(exec.AlreadyExists(Sintactico.symbolTable, name.toString(), Sintactico.ambito, Sintactico.cMin)){
-                    System.out.println("\033[31m*** Error: Variable name: "+ name.toString() +" is already exists***");
-                }
-                else{
-                    Sintactico.symbolTable.put(name.toString(), new symbol(name.toString(), tipo.toString(), Sintactico.ambito));
-                    Sintactico.Log.add(new logs("Insert", name.toString(), tipo.toString(), "", Sintactico.ambito));
-                }
-                RESULT = tipo;
-            :};
+Variable ::= Type ident;
 
-Type ::=  INT                   {: RESULT = new String("int"); :}
-        |DOUBLE                 {: RESULT = new String("double"); :}
-        |BOOL                   {: RESULT = new String("bool"); :}
-        |STRING                 {: RESULT = new String("string"); :}
-        |ident:name             {: RESULT = new String(name.toString()); :}
-        |Type:tipo Brackets     {: RESULT = new String(tipo.toString() + "[]"); :} 
-        ;
+Type ::=  INT
+        |DOUBLE
+        |BOOL
+        |STRING
+        |ident
+        |Type Brackets;
 
-FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis Formals:param ClosedParenthesis 
-                {:
-                    if(exec.ExistsFunction(Sintactico.symbolTable, nombre.toString())){
-                        System.out.println("\033[31m***Error: Function name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "function", Sintactico.ambito);
-                        s.AddFunction(tipo.toString(), Sintactico.parametros);
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "function", tipo.toString(), Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    }
-                :}
-                StmtBlock
-                |sVoid ident:nombre OpeningParenthesis Formals:param ClosedParenthesis 
-                    {:
-                    if(exec.ExistsFunction(Sintactico.symbolTable, nombre.toString())){
-                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "method", Sintactico.ambito);
-                        s.AddFunction("void", Sintactico.parametros);
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "method", "void", Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    }
-                :}
-                StmtBlock
-                 
-                |Type:tipo ident:nombre Parenthesis 
-                {:
-                    if(exec.ExistsFunction(Sintactico.symbolTable, nombre.toString())){
-                        System.out.println("\033[31m***Error: Function name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "function", Sintactico.ambito);
-                        s.AddFunction(tipo.toString(), Sintactico.parametros);
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "function", tipo.toString(), Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    }
-                :}
-                StmtBlock
-                |sVoid ident:nombre Parenthesis 
-                {:
-                    if(exec.ExistsFunction(Sintactico.symbolTable, nombre.toString())){
-                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "method", Sintactico.ambito);
-                        s.AddFunction("void", Sintactico.parametros);
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "method", "void", Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    }
-                :}
-                StmtBlock
-                ;
+FunctionDecl ::= Type ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
+                |sVoid ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
+                |Type ident Parenthesis StmtBlock
+                |sVoid ident Parenthesis StmtBlock;
 
-Formals ::= Variable:tipo RepeatVariable                {: Sintactico.parametros+=tipo+"$"; RESULT = Sintactico.parametros; :}
-            | /* epsilon */;                            //{: Sintactico.parametros+=""; RESULT = Sintactico.parametros; :}
-RepeatVariable ::= comma Variable:tipo RepeatVariable   {: Sintactico.parametros+= tipo+"$"; RESULT = Sintactico.parametros; :}
-            | /* epsilon */;                            //{: Sintactico.parametros+=""; RESULT = Sintactico.parametros; :}
+Formals ::= Variable RepeatVariable| /* epsilon */;
+RepeatVariable ::= comma Variable RepeatVariable| /* epsilon */;
 
-ClassDecl ::= sClass ident:nombre ExtIdent ImpIdent 
-            {:  
-                if(exec.ExistsFunction(Sintactico.symbolTable, nombre)){
-                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "class", Sintactico.ambito);
-                        s.AddFunction("class", "");
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "class", "", Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    } 
-            :}
-            OpeningCurlyBracket {: Sintactico.ambito++; :} RepeatableField ClosedCurlyBracket {: exec.DeleteAmbit(Sintactico.symbolTable, Sintactico.ambito); Sintactico.ambito--;  :}
-            
-            | sClass ident:nombre ExtIdent ImpIdent CurlyBrackets
-            {:
-                 if(exec.ExistsFunction(Sintactico.symbolTable, nombre)){
-                        System.out.println("\033[31m***Error: Method name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "class", Sintactico.ambito);
-                        s.AddFunction("class", "");
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "class", "", Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    } 
-            :};
-ExtIdent ::= sExtends ident
-            | /* epsilon */;
-ImpIdent ::= sImplements MultipleIdents
-            | /* epsilon */;
-MultipleIdents ::= ident
-            |MultipleIdents comma ident;
+ClassDecl ::= sClass ident ExtIdent ImpIdent OpeningCurlyBracket RepeatableField ClosedCurlyBracket
+            | sClass ident ExtIdent ImpIdent CurlyBrackets;
+ExtIdent ::= sExtends ident| /* epsilon */;
+ImpIdent ::= sImplements MultipleIdents| /* epsilon */;
+MultipleIdents ::= ident|MultipleIdents comma ident;
                 
-RepeatableField ::= RepeatableField Field
-            | /* epsilon */;
+RepeatableField ::= RepeatableField Field| /* epsilon */;
+Field ::= VariableDecl | FunctionDecl;
 
-Field ::= VariableDecl 
-            | FunctionDecl;
+InterfaceDecl ::= sInterface ident OpeningCurlyBracket RepeatablePrototype ClosedCurlyBracket
+                | sInterface ident CurlyBrackets;
 
-InterfaceDecl ::= sInterface ident:nombre 
-                {: 
-                     if(exec.ExistsFunction(Sintactico.symbolTable, nombre)){
-                        System.out.println("\033[31m***Error: Interface name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "interface", Sintactico.ambito);
-                        s.AddFunction("class", "");
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "interface", "", Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    } 
-                :}
-                OpeningCurlyBracket {: Sintactico.ambito++; :} RepeatablePrototype ClosedCurlyBracket {: exec.DeleteAmbit(Sintactico.symbolTable, Sintactico.ambito); Sintactico.ambito--; :}
-                | sInterface ident:nombre 
-                {: 
-                     if(exec.ExistsFunction(Sintactico.symbolTable, nombre)){
-                        System.out.println("\033[31m***Error: Interface name: "+ nombre.toString() +" is already exists***");
-                    }
-                    else{
-                        symbol s = new symbol(nombre.toString(), "interface", Sintactico.ambito);
-                        s.AddFunction("class", "");
-                        Sintactico.symbolTable.put(nombre.toString(), s);
-                        Sintactico.Log.add(new logs("Insert", nombre.toString(), "interface", "", Sintactico.parametros, Sintactico.ambito));
-                        Sintactico.parametros = "";
-                    } 
-                :}
-                CurlyBrackets;
-//-----------------------------------------------------------------------------------------------------------------------------
 RepeatablePrototype ::= RepeatablePrototype Prototype| /* epsilon */;
-Prototype ::= Type:tipo ident:nombre OpeningParenthesis Formals ClosedParenthesis pyc
+Prototype ::= Type ident OpeningParenthesis Formals ClosedParenthesis pyc
             |sVoid ident OpeningParenthesis Formals ClosedParenthesis pyc
             |Type ident Parenthesis pyc
             |sVoid ident Parenthesis pyc;
@@ -319,8 +181,9 @@ LibCall ::= sGetByte OpeningParenthesis Expr ClosedParenthesis
 
 Actuals ::= Expr ExprRepeat| /* epsilon */ ;
 
+//Constant ::= intConstant | doubleConstant | boolConstant | stringConstant | null
 Constant ::= integerConstant
             |doubleConstant 
             |boolConstant 
             |stringConstant 
-            |sNull;
+|sNull;

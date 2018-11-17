@@ -118,7 +118,6 @@ public class Analizador {
                         Log = parser.getLog();
                         reader.close();
                         //===================================================
-
                         for(Yytoken element: lexicalErrors){
                             if(element.error){
                                 System.out.println(element + "\r\n");
@@ -127,8 +126,8 @@ public class Analizador {
                         for(String element: syntacticErrors){
                             System.out.println(element + "\r\n");
                         }
-                        
-                         File tabla = new File(path2+"\\tablaDeSimbolos.txt");
+                        String ruta = path2.split(fileName)[0];
+                        File tabla = new File(ruta+"\\tablaDeSimbolos.txt");
                         BufferedWriter bw;
                         if(tabla.exists()){
                            bw = new BufferedWriter(new FileWriter(tabla));
@@ -151,7 +150,7 @@ public class Analizador {
                            bw.close();
                         }
                         
-                        tabla = new File(path2+"\\logTabla.txt");
+                        tabla = new File(ruta+"\\logTabla.txt");
                         if(tabla.exists()){
                            bw = new BufferedWriter(new FileWriter(tabla));
                            bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
