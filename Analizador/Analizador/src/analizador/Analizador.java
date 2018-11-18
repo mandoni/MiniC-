@@ -36,7 +36,6 @@ public class Analizador {
     public static void main(String[] args) {
         // TODO code application logic here
         Scanner s = new Scanner(System.in);
-        Diccionario exec = new Diccionario();
         Hashtable<String, symbol> symbolTable = new Hashtable<String, symbol>();
         List<logs> Log = new  ArrayList<logs>();
 
@@ -135,7 +134,7 @@ public class Analizador {
                            for(Map.Entry<String, symbol> entry :symbolTable.entrySet()){
                                symbol sy = entry.getValue();
                                //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                               bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.ambito);
+                               bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
                            }
                            bw.close();
                         }else{
@@ -145,7 +144,7 @@ public class Analizador {
                             for(Map.Entry<String, symbol> entry :symbolTable.entrySet()){
                                 symbol sy = entry.getValue();
                                 //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                                bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.ambito);
+                                bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
                             }
                            bw.close();
                         }
@@ -153,10 +152,10 @@ public class Analizador {
                         tabla = new File(ruta+"\\logTabla.txt");
                         if(tabla.exists()){
                            bw = new BufferedWriter(new FileWriter(tabla));
-                           bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                           bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tClase\t\t\tÁmbito");
                            for(logs sy : Log){
                                 //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.ambito);
+                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
                             }
                            bw.close();
                         }else{
@@ -165,11 +164,10 @@ public class Analizador {
                             bw.write("Operación\t\t\tSimbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
                             for(logs sy : Log){
                                 //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.ambito);
+                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
                             }
                            bw.close();
                         }
-
                         if((!lexErrors) &&(syntacticErrors.isEmpty())){
                             System.out.println("\033[32m***SYNTACTIC ANALISIS SUCCESSFUL***");     
                         }
@@ -186,8 +184,6 @@ public class Analizador {
                     break;
             }
         }while(valor != 4);
-        
-        
     }
     
     private static String getIncludes(BufferedReader code, String path){

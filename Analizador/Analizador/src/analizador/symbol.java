@@ -18,10 +18,13 @@ public class symbol {
     public String rType;
     public int ambito; 
     public String parametros;
-    symbol(String lexeme, String type, int ambito){
+    public String clase;
+    
+    symbol(String lexeme, String type, int ambito, String clase){
         this.lexeme = lexeme;
         this.type = type; 
         this.ambito = ambito;
+        this.clase = clase;
     }
     
     public void SymbolValue(String value){

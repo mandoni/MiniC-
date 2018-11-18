@@ -37,16 +37,19 @@ parser code {:
 action code {:
                 Diccionario exec = new Diccionario();
 
-                public static int context = 0, cMin = 0, ambito = 0;
-                public static String parametros = "";
+                public int context = 0, cMin = 0, ambito = 0;
+                public String parametros = "", clase = "null";
             :}
 
 /*  Symbol Lists  */
 
 // Terminals
-terminal ident, pyc, INT, DOUBLE, BOOL, STRING, OpeningBracket, ClosedBracket, OpeningParenthesis, ClosedParenthesis, sVoid, comma, sClass, OpeningCurlyBracket, ClosedCurlyBracket, sExtends, sImplements, sInterface,
-cIf, cElse, lWhile, lFor, sReturn, sBreak, sPrint, assignment, sThis, sNew, sNewArray, sReadInteger, sMalloc, dot, sGetByte, sSetByte, sNull, sReadLine, integerConstant, doubleConstant, boolConstant, 
-stringConstant, ComparisonOperators, equality, negative, sum, ArithmeticOperators, denial, Brackets, and, or, Parenthesis, CurlyBrackets;
+terminal pyc, INT, DOUBLE, BOOL, STRING, OpeningBracket, ClosedBracket, OpeningParenthesis, ClosedParenthesis, sVoid, comma, sClass, OpeningCurlyBracket, ClosedCurlyBracket, sExtends, sImplements, sInterface,
+cIf, cElse, lWhile, lFor, sReturn, sBreak, sPrint, assignment, sThis, sNew, sNewArray, sReadInteger, sMalloc, dot, sGetByte, sSetByte, sNull, sReadLine,
+ComparisonOperators, equality, negative, sum, ArithmeticOperators, denial, Brackets, and, or, Parenthesis, CurlyBrackets;
+terminal Integer    integerConstant;
+terminal String     stringConstant, ident, boolConstant;
+terminal double     doubleConstant;
  
 // Non Terminals
 non terminal Program, ProgramA, Decl, VariableDecl, VariableDeclAux, Variable, Type, FunctionDecl, Formals, RepeatVariable, ClassDecl, ExtIdent, ImpIdent, MultipleIdents,
@@ -77,16 +80,38 @@ Decl ::=  VariableDecl|
 
 VariableDecl ::= Variable pyc;
 
-Variable ::= Type ident;
+Variable ::= Type:tipo ident:nombre 
+            {:
+                if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                    System.out.println("\033[32m***ERROR: SYMBOL "+ nombre.toString() +"IS ALREADY EXISTS***");
+                else{
+                    Sintactico.symbolTable.put(nombre.toString(), new symbol (nombre.toString(), tipo.toString(), ambito, clase));
+                    Sintactico.Log.add(new logs("INSERT", nombre.toString(), tipo.toString(), "", ambito, clase));
+                } 
+                RESULT = tipo.toString();
+            :};
 
-Type ::=  INT
-        |DOUBLE
-        |BOOL
-        |STRING
-        |ident
-        |Type Brackets;
+Type ::=  INT                   {: RESULT = "int"; :}
+        |DOUBLE                 {: RESULT = "double"; :}
+        |BOOL                   {: RESULT = "bool"; :}
+        |STRING                 {: RESULT = "string"; :}
+        |ident:nombre           
+        {: 
+             if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin)){
+                RESULT = nombre.toString(); 
+             }
+             else{
+                System.out.println("\033[32m***ERROR: IDENTIFIER "+ nombre.toString() +" DOES NOT EXIST***");
+                //throw new Error("Impossible to continue.");
+                //RESULT = "";
+             }
+        :}
+        |Type:tipo Brackets {: RESULT = tipo+"[]"; :}
+        ;    
 
-FunctionDecl ::= Type ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
+FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis Formals:param ClosedParenthesis {: 
+                    //if(exec.AlreadyExists(Sintactico.symbolTable, ))
+                 :} StmtBlock
                 |sVoid ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
                 |Type ident Parenthesis StmtBlock
                 |sVoid ident Parenthesis StmtBlock;

@@ -16,23 +16,26 @@ public class logs {
     public String retorno;
     public String parametros;
     public String valor;
+    public String clase;
     public int ambito;
     
     logs (String operacion){
         this.operacion = operacion;
     }
-    logs(String operacion, String symbol, String tipo, String valor, int ambito){
+    logs(String operacion, String symbol, String tipo, String valor, int ambito, String clase){
         this.operacion = operacion;
         this.symbol = symbol;
         this.tipo = tipo;
         this.valor = valor;
         this.ambito = ambito;
+        this.clase = clase;
     }
-    logs(String operacion, String symbol, String tipo, String retorno, String parametros, int ambito){
+    logs(String operacion, String symbol, String tipo, String retorno, String parametros, int ambito, String clase){
         this.operacion = operacion;
         this.symbol = symbol;
         this.tipo = tipo;
         this.valor = valor;
         this.ambito = ambito;
+        this.clase = clase;
     }
 }

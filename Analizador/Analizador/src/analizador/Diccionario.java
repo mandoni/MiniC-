@@ -44,7 +44,7 @@ public class Diccionario {
             if(entry.getKey() == lexeme)
                 return entry.getValue();
         }
-        return new symbol("", "", -1);
+        return new symbol("", "", -1, "");
     }
     
     public symbol FindSymbol(Hashtable<String, symbol> table, String lexeme, int contexto, int cMin){
@@ -52,7 +52,7 @@ public class Diccionario {
             if(entry.getKey() == lexeme && (entry.getValue().ambito <= contexto && entry.getValue().ambito >= cMin))
                 return entry.getValue();
         }
-        return new symbol("", "", -1);
+        return new symbol("", "", -1, "");
     }
     
     public Hashtable<String, symbol> DeleteAmbit(Hashtable<String, symbol> table, int ambit){
