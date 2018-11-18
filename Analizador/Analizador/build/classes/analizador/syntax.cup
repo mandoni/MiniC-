@@ -83,7 +83,7 @@ VariableDecl ::= Variable pyc;
 Variable ::= Type:tipo ident:nombre 
             {:
                 if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
-                    System.out.println("\033[32m***ERROR: SYMBOL "+ nombre.toString() +"IS ALREADY EXISTS***");
+                    System.out.println("\033[32m***ERROR: SYMBOL "+ nombre.toString() +"IS ALREADY EXIST***");
                 else{
                     Sintactico.symbolTable.put(nombre.toString(), new symbol (nombre.toString(), tipo.toString(), ambito, clase));
                     Sintactico.Log.add(new logs("INSERT", nombre.toString(), tipo.toString(), "", ambito, clase));
@@ -109,7 +109,31 @@ Type ::=  INT                   {: RESULT = "int"; :}
         |Type:tipo Brackets {: RESULT = tipo+"[]"; :}
         ;    
 
-FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis Formals:param ClosedParenthesis {: 
+FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis {: ambito++; :} Formals ClosedParenthesis {: 
+                    if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[32m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXIST***");
+                    else{
+                        symbol s = new symbol(nombre.toString(), "function", (ambito - 1), clase);
+                        s.AddFunction(tipo.toString(), parametros);
+                        Sintactico.symbolTable.put(nombre.toString(), s);
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "function", tipo.toString(), parametros, (ambito - 1), clase));
+                        parametros = "";
+                    }
+
+                 :} StmtBlock
+                |sVoid ident:nombre OpeningParenthesis {: ambito++; :} Formals ClosedParenthesis {: 
+                    if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[32m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXIST***");
+                    else{
+                        symbol s = new symbol(nombre.toString(), "method", (ambito - 1), clase);
+                        s.AddFunction("void", parametros);
+                        Sintactico.symbolTable.put(nombre.toString(), s);
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "method", "void", parametros, (ambito - 1), clase));
+                        parametros = "";
+                    }
+
+                 :} StmtBlock
+                |Type:tipo ident:nombre Parenthesis {: 
                     if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
                         System.out.println("\033[32m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXISTS***");
                     else{
@@ -120,13 +144,30 @@ FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis Formals:param ClosedP
                         parametros = "";
                     }
 
-                 :} StmtBlock
-                |sVoid ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
-                |Type ident Parenthesis StmtBlock
-                |sVoid ident Parenthesis StmtBlock;
+                 :}StmtBlock
+                |sVoid ident Parenthesis {: 
+                    if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[32m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXISTS***");
+                    else{
+                        symbol s = new symbol(nombre.toString(), "method", ambito, clase);
+                        s.AddFunction(tipo.toString(), parametros);
+                        Sintactico.symbolTable.put(nombre.toString(), s);
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "method", "void", parametros, ambito, clase));
+                        parametros = "";
+                    }
 
-Formals ::= Variable RepeatVariable| /* epsilon */;
-RepeatVariable ::= comma Variable RepeatVariable| /* epsilon */;
+                 :}StmtBlock;
+
+Formals ::= Variable:tipo RepeatVariable
+        {:
+            parametros += tipo.toString()+"$"; 
+        :}
+        | /* epsilon */;
+RepeatVariable ::= comma Variable:tipo RepeatVariable 
+        {:
+            parametros += tipo.toString()+"$";
+        :}
+        | /* epsilon */;
 
 ClassDecl ::= sClass ident ExtIdent ImpIdent OpeningCurlyBracket RepeatableField ClosedCurlyBracket
             | sClass ident ExtIdent ImpIdent CurlyBrackets;
