@@ -110,7 +110,16 @@ Type ::=  INT                   {: RESULT = "int"; :}
         ;    
 
 FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis Formals:param ClosedParenthesis {: 
-                    //if(exec.AlreadyExists(Sintactico.symbolTable, ))
+                    if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[32m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXISTS***");
+                    else{
+                        symbol s = new symbol(nombre.toString(), "function", ambito, clase);
+                        s.AddFunction(tipo.toString(), parametros);
+                        Sintactico.symbolTable.put(nombre.toString(), s);
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "function", tipo.toString(), parametros, ambito, clase));
+                        parametros = "";
+                    }
+
                  :} StmtBlock
                 |sVoid ident OpeningParenthesis Formals ClosedParenthesis StmtBlock
                 |Type ident Parenthesis StmtBlock

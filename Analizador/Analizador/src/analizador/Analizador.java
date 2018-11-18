@@ -130,21 +130,21 @@ public class Analizador {
                         BufferedWriter bw;
                         if(tabla.exists()){
                            bw = new BufferedWriter(new FileWriter(tabla));
-                           bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                           bw.write("Simbolo\tTipo\tValor\tRetorno\tParametros\tÁmbito\n");
                            for(Map.Entry<String, symbol> entry :symbolTable.entrySet()){
                                symbol sy = entry.getValue();
                                //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                               bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
+                               bw.write(sy.lexeme +"\t\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito+"\n");
                            }
                            bw.close();
                         }else{
                             tabla.createNewFile();
                             bw = new BufferedWriter(new FileWriter(tabla));
-                            bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                            bw.write("Simbolo\tTipo\tValor\tRetorno\tParametros\tÁmbito\n");
                             for(Map.Entry<String, symbol> entry :symbolTable.entrySet()){
                                 symbol sy = entry.getValue();
                                 //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                                bw.write(sy.lexeme +"\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
+                                bw.write(sy.lexeme +"\t\t"+ (sy.constante?"const "+sy.type:sy.type) + "\t\t" + sy.value +"\t" + sy.rType +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito+"\n");
                             }
                            bw.close();
                         }
@@ -152,19 +152,19 @@ public class Analizador {
                         tabla = new File(ruta+"\\logTabla.txt");
                         if(tabla.exists()){
                            bw = new BufferedWriter(new FileWriter(tabla));
-                           bw.write("Simbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tClase\t\t\tÁmbito");
+                           bw.write("Simbolo\tTipo\tValor\tRetorno\tParametros\tClase\tÁmbito\n");
                            for(logs sy : Log){
                                 //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
+                                bw.write(sy.operacion + "\t\t" + sy.symbol +"\t\t"+ sy.tipo + "\t\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito+ "\n");
                             }
                            bw.close();
                         }else{
                             tabla.createNewFile();
                             bw = new BufferedWriter(new FileWriter(tabla));
-                            bw.write("Operación\t\t\tSimbolo\t\t\tTipo\t\t\tValor\t\t\tRetorno\t\t\tParametros\t\t\t\tÁmbito");
+                            bw.write("Operación\tSimbolo\tTipo\tValor\tRetorno\tParametros\tÁmbito\n");
                             for(logs sy : Log){
                                 //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                                bw.write(sy.parametros + "\t" + sy.symbol +"\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito);
+                                bw.write(sy.parametros + "\t\t" + sy.symbol +"\t\t"+ sy.tipo + "\t" + sy.valor +"\t" + sy.retorno +"\t" + sy.parametros + "\t" + sy.clase + "\t" + sy.ambito+ "\n");
                             }
                            bw.close();
                         }
