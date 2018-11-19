@@ -56,10 +56,18 @@ public class Diccionario {
     }
     
     public Hashtable<String, symbol> DeleteAmbit(Hashtable<String, symbol> table, int ambit){
-        table.entrySet().stream().filter((entry) -> (entry.getValue().ambito == ambit)).forEachOrdered((entry) -> {
-            table.remove(entry.getKey());
-        });
-        return table;
+        Hashtable<String, symbol> retorno = new Hashtable<>();
+         for(Map.Entry<String, symbol> entry : table.entrySet()) {
+            if(entry.getValue().ambito != ambit)
+                retorno.put(entry.getKey(), entry.getValue());
+        }
+        return retorno;
+        /*
+        for(Map.Entry<String, symbol> entry : table.entrySet()) {
+            if(entry.getValue().ambito == ambit)
+                table.remove(entry.getKey());
+        }
+        */
     }
     
     public boolean isNumber(byte[] lexeme){
