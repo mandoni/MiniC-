@@ -34,7 +34,8 @@ public class logs {
         this.operacion = operacion;
         this.symbol = symbol;
         this.tipo = tipo;
-        this.valor = valor;
+        this.retorno = retorno;
+        this.parametros = parametros;
         this.ambito = ambito;
         this.clase = clase;
     }

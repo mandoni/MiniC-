@@ -164,7 +164,7 @@ public class Analizador {
                             bw.write("Operación\tSimbolo\tTipo\tValor\tRetorno\tParametros\tÁmbito\n");
                             for(logs sy : Log){
                                 //String syTipo = (sy.constante?"const "+sy.type:sy.type);
-                                bw.write(sy.parametros + "\t\t|" + sy.symbol +"\t\t|"+ sy.tipo + "\t|" + sy.valor +"\t|" + sy.retorno +"\t|" + sy.parametros + "\t|" + sy.clase + "\t|" + sy.ambito+ "\n");
+                                bw.write(sy.operacion + "\t\t|" + sy.symbol +"\t\t|"+ sy.tipo + "\t|" + sy.valor +"\t|" + sy.retorno +"\t|" + sy.parametros + "\t|" + sy.clase + "\t|" + sy.ambito+ "\n");
                             }
                            bw.close();
                         }

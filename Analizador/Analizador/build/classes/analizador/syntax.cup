@@ -83,7 +83,7 @@ VariableDecl ::= Variable pyc;
 Variable ::= Type:tipo ident:nombre 
             {:
                 if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
-                    System.out.println("\033[32m***ERROR: SYMBOL "+ nombre.toString() +"IS ALREADY EXIST***");
+                    System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" IS ALREADY EXIST***");
                 else{
                     Sintactico.symbolTable.put(nombre.toString(), new symbol (nombre.toString(), tipo.toString(), ambito, clase));
                     Sintactico.Log.add(new logs("INSERT", nombre.toString(), tipo.toString(), "", ambito, clase));
@@ -101,7 +101,7 @@ Type ::=  INT                   {: RESULT = "int"; :}
                 RESULT = nombre.toString(); 
              }
              else{
-                System.out.println("\033[32m***ERROR: IDENTIFIER "+ nombre.toString() +" DOES NOT EXIST***");
+                System.out.println("\033[31m***ERROR: IDENTIFIER "+ nombre.toString() +" DOES NOT EXIST***");
                 //throw new Error("Impossible to continue.");
                 //RESULT = "";
              }
@@ -109,34 +109,34 @@ Type ::=  INT                   {: RESULT = "int"; :}
         |Type:tipo Brackets {: RESULT = tipo+"[]"; :}
         ;    
 
-FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis {: ambito++; :} Formals ClosedParenthesis {: 
+FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis {: ambito++; Sintactico.Log.add(new logs("Ámbito++")); :} Formals ClosedParenthesis {: 
                     if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
-                        System.out.println("\033[32m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXIST***");
+                        System.out.println("\033[31m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXIST***");
                     else{
                         symbol s = new symbol(nombre.toString(), "function", (ambito - 1), clase);
                         s.AddFunction(tipo.toString(), parametros);
                         Sintactico.symbolTable.put(nombre.toString(), s);
                         Sintactico.Log.add(new logs("INSERT", nombre.toString(), "function", tipo.toString(), parametros, (ambito - 1), clase));
-                        Sintactico.Log.add(new logs("Ámbito++"));
                         parametros = "";
                     }
 
                  :} StmtBlock
-                |sVoid ident:nombre OpeningParenthesis {: ambito++; :} Formals ClosedParenthesis {: 
+                |sVoid ident:nombre OpeningParenthesis {: ambito++; Sintactico.Log.add(new logs("Ámbito++")); :} Formals ClosedParenthesis {: 
                     if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
-                        System.out.println("\033[32m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXIST***");
+                        System.out.println("\033[31m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXIST***");
                     else{
                         symbol s = new symbol(nombre.toString(), "method", (ambito - 1), clase);
                         s.AddFunction("void", parametros);
                         Sintactico.symbolTable.put(nombre.toString(), s);
                         Sintactico.Log.add(new logs("INSERT", nombre.toString(), "method", "void", parametros, (ambito - 1), clase));
+                        Sintactico.Log.add(new logs("Ámbito++"));
                         parametros = "";
                     }
 
                  :} StmtBlock
                 |Type:tipo ident:nombre Parenthesis {: 
                     if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
-                        System.out.println("\033[32m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXIST***");
+                        System.out.println("\033[31m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXIST***");
                     else{
                         symbol s = new symbol(nombre.toString(), "function", ambito, clase);
                         s.AddFunction(tipo.toString(), parametros);
@@ -145,10 +145,10 @@ FunctionDecl ::= Type:tipo ident:nombre OpeningParenthesis {: ambito++; :} Forma
                         parametros = "";
                     }
 
-                 :}StmtBlock
+                 :} StmtBlock
                 |sVoid ident:nombre Parenthesis {: 
                     if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
-                        System.out.println("\033[32m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXIST***");
+                        System.out.println("\033[31m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXIST***");
                     else{
                         symbol s = new symbol(nombre.toString(), "method", ambito, clase);
                         s.AddFunction("method", parametros);
@@ -172,14 +172,14 @@ RepeatVariable ::= comma Variable:tipo RepeatVariable
 
 ClassDecl ::= sClass ident:nombre ExtIdent ImpIdent {: 
                 if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
-                        System.out.println("\033[32m***ERROR: CLASS "+ nombre.toString() +" IS ALREADY EXIST***");
+                        System.out.println("\033[31m***ERROR: CLASS "+ nombre.toString() +" IS ALREADY EXIST***");
                     else{
                         clase = nombre.toString();
                         Sintactico.symbolTable.put(clase, new symbol(clase, "class", ambito, clase));
                         Sintactico.Log.add(new logs("INSERT", clase, "class", "", ambito, clase));
-                        ambito++;
+                        ambito++; Sintactico.Log.add(new logs("Ámbito++"));
                     }
-             :} OpeningCurlyBracket RepeatableField ClosedCurlyBracket {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); ambito--; :}
+             :} OpeningCurlyBracket RepeatableField ClosedCurlyBracket {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); Sintactico.Log.add(new logs ("DELETE Ámbito"+ambito)); ambito--; clase = "null"; :}
             | sClass ident:nombre ExtIdent ImpIdent CurlyBrackets{:
                     Sintactico.symbolTable.put(nombre.toString(), new symbol(nombre.toString(), "class", ambito, nombre.toString()));
                     Sintactico.Log.add(new logs("INSERT", nombre.toString(), "class", "", ambito, nombre.toString()));
@@ -191,16 +191,80 @@ MultipleIdents ::= ident|MultipleIdents comma ident;
 RepeatableField ::= RepeatableField Field| /* epsilon */;
 Field ::= VariableDecl | FunctionDecl;
 
-InterfaceDecl ::= sInterface ident OpeningCurlyBracket RepeatablePrototype ClosedCurlyBracket
-                | sInterface ident CurlyBrackets;
+InterfaceDecl ::= sInterface ident:nombre OpeningCurlyBracket {: 
+                if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[31m***ERROR: INTERFACE "+ nombre.toString() +" IS ALREADY EXIST***");
+                    else{
+                        clase = nombre.toString();
+                        Sintactico.symbolTable.put(clase, new symbol(clase, "interface", ambito, clase));
+                        Sintactico.Log.add(new logs("INSERT", clase, "interface", "", ambito, clase));
+                        ambito++; Sintactico.Log.add(new logs("Ámbito++"));
+                    }
+             :} RepeatablePrototype ClosedCurlyBracket {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); Sintactico.Log.add(new logs ("DELETE Ámbito"+ambito));; ambito--; clase = "null";:}
+                | sInterface ident:nombre CurlyBrackets {: 
+                if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[31m***ERROR: INTERFACE "+ nombre.toString() +" IS ALREADY EXIST***");
+                    else{
+                        Sintactico.symbolTable.put(nombre.toString(), new symbol(nombre.toString(), "interface", ambito, nombre.toString()));
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "interface", "", ambito, nombre.toString()));
+                    }
+             :};
 
 RepeatablePrototype ::= RepeatablePrototype Prototype| /* epsilon */;
-Prototype ::= Type ident OpeningParenthesis Formals ClosedParenthesis pyc
-            |sVoid ident OpeningParenthesis Formals ClosedParenthesis pyc
-            |Type ident Parenthesis pyc
-            |sVoid ident Parenthesis pyc;
+Prototype ::= Type:tipo ident:nombre OpeningParenthesis Formals ClosedParenthesis pyc
+            {:
+                    if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[31m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXIST***");
+                    else{
+                        symbol s = new symbol(nombre.toString(), "function", ambito, clase);
+                        s.AddFunction(tipo.toString(), parametros);
+                        Sintactico.symbolTable.put(nombre.toString(), s);
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "function", tipo.toString(), parametros, ambito, clase));
+                        parametros = "";
+                    }
 
-StmtBlock ::= OpeningCurlyBracket VariableDeclAux StmtAux ClosedCurlyBracket
+            :}
+            |sVoid ident:nombre OpeningParenthesis Formals ClosedParenthesis pyc
+            {: 
+                    if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[31m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXIST***");
+                    else{
+                        symbol s = new symbol(nombre.toString(), "method", ambito , clase);
+                        s.AddFunction("void", parametros);
+                        Sintactico.symbolTable.put(nombre.toString(), s);
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "method", "void", parametros, ambito, clase));
+                        parametros = "";
+                    }
+
+                 :}
+            |Type:tipo ident:nombre Parenthesis pyc
+            {: 
+                    if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                        System.out.println("\033[31m***ERROR: FUNCTION "+ nombre.toString() +" IS ALREADY EXIST***");
+                    else{
+                        symbol s = new symbol(nombre.toString(), "function", ambito, clase);
+                        s.AddFunction(tipo.toString(), parametros);
+                        Sintactico.symbolTable.put(nombre.toString(), s);
+                        Sintactico.Log.add(new logs("INSERT", nombre.toString(), "function", tipo.toString(), parametros, ambito, clase));
+                        parametros = "";
+                    }
+
+                 :}
+            |sVoid ident:nombre Parenthesis pyc
+            {: 
+                if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                    System.out.println("\033[31m***ERROR: METHOD "+ nombre.toString() +" IS ALREADY EXIST***");
+                else{
+                    symbol s = new symbol(nombre.toString(), "method", ambito, clase);
+                    s.AddFunction("method", parametros);
+                    Sintactico.symbolTable.put(nombre.toString(), s);
+                    Sintactico.Log.add(new logs("INSERT", nombre.toString(), "method", "void", parametros, ambito, clase));
+                    parametros = "";
+                }
+
+             :};
+
+StmtBlock ::= OpeningCurlyBracket VariableDeclAux StmtAux ClosedCurlyBracket {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); Sintactico.Log.add(new logs ("DELETE Ámbito"+ambito));; ambito--;:}
             | CurlyBrackets;
 VariableDeclAux ::= VariableDeclAux VariableDecl| /* epsilon */;
 StmtAux ::= Stmt StmtAux| /* epsilon */ ;
@@ -216,12 +280,13 @@ Stmt ::= Expr pyc
         |StmtBlock;
 ExprOZ ::= Expr| /* epsilon */ ;
 
-IfStmt ::= cIf OpeningParenthesis Expr ClosedParenthesis Stmt ElseStmt;
-ElseStmt ::= cElse Stmt| /* epsilon */ ;
+IfStmt ::= cIf OpeningParenthesis Expr ClosedParenthesis {: ambito++; Sintactico.Log.add(new logs("Ámbito++")); :} Stmt {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); Sintactico.Log.add(new logs ("DELETE Ámbito"+ambito));; ambito--; :} ElseStmt;
+ElseStmt ::= cElse {: ambito++; Sintactico.Log.add(new logs("Ámbito++")); :} Stmt {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); Sintactico.Log.add(new logs ("DELETE Ámbito"+ambito));; ambito--; :}
+        | /* epsilon */ ;
 
-WhileStmt ::= lWhile OpeningParenthesis Expr ClosedParenthesis Stmt;
+WhileStmt ::= lWhile OpeningParenthesis Expr ClosedParenthesis {: ambito++; Sintactico.Log.add(new logs("Ámbito++")); :} Stmt {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); Sintactico.Log.add(new logs ("DELETE Ámbito"+ambito));; ambito--; :};
 
-ForStmt ::= lFor OpeningParenthesis ExprOZ pyc  Expr pyc ExprOZ ClosedParenthesis Stmt;
+ForStmt ::= lFor OpeningParenthesis ExprOZ pyc  Expr pyc ExprOZ ClosedParenthesis {: ambito++; Sintactico.Log.add(new logs("Ámbito++")); :} Stmt {: Sintactico.symbolTable = exec.DeleteAmbit(Sintactico.symbolTable, ambito); Sintactico.Log.add(new logs ("DELETE Ámbito"+ambito));; ambito--; :};
 
 ReturnStmt ::= sReturn ExprOZ pyc;
 
@@ -253,9 +318,9 @@ Expr ::= LValue assignment Expr
         |sReadLine OpeningParenthesis ClosedParenthesis
         |sMalloc OpeningParenthesis Expr ClosedParenthesis;
 
-LValue ::= ident
-           |Expr dot ident
-           |Expr OpeningBracket Expr ClosedBracket;
+LValue ::= ident:nombre
+           |Expr:simbolo dot ident:nombre
+           |Expr:simbolo1 OpeningBracket Expr:simbolo2 ClosedBracket;
 
 Call ::= ident OpeningParenthesis Actuals ClosedParenthesis
         |ident Parenthesis

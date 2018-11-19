@@ -19,8 +19,9 @@ public class Diccionario {
     public boolean AlreadyExists(Hashtable<String, symbol> table, String newLexeme, int contexto, int cMin){
         if(isNumber(newLexeme.getBytes()))
             return false;
-        if (table.entrySet().stream().anyMatch((entry) -> (entry.getKey() == newLexeme && (entry.getValue().ambito <= contexto && entry.getValue().ambito >= cMin)))) {
-            return true;
+        for(Map.Entry<String, symbol> entry : table.entrySet()) {
+            if(entry.getValue().lexeme.equals(newLexeme))
+                return true;
         }
         return false;
         /*
@@ -33,15 +34,15 @@ public class Diccionario {
     
     public boolean ExistsFunction(Hashtable<String, symbol> table, String lexeme){
          for(Map.Entry<String, symbol> entry : table.entrySet()) {
-            if(entry.getKey() == lexeme)
+            if(entry.getKey().equals(lexeme))
                 return true;
         }
         return false;
     }
     
     public symbol FindFunction(Hashtable<String, symbol> table, String lexeme){
-        for(Map.Entry<String, symbol> entry : table.entrySet()) {
-            if(entry.getKey() == lexeme)
+       for(Map.Entry<String, symbol> entry : table.entrySet()) {
+            if(entry.getValue().lexeme.equals(lexeme))
                 return entry.getValue();
         }
         return new symbol("", "", -1, "");
@@ -49,7 +50,7 @@ public class Diccionario {
     
     public symbol FindSymbol(Hashtable<String, symbol> table, String lexeme, int contexto, int cMin){
         for(Map.Entry<String, symbol> entry : table.entrySet()) {
-            if(entry.getKey() == lexeme && (entry.getValue().ambito <= contexto && entry.getValue().ambito >= cMin))
+            if(entry.getValue().lexeme.equals(lexeme))
                 return entry.getValue();
         }
         return new symbol("", "", -1, "");
