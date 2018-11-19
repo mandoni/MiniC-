@@ -8,6 +8,7 @@ package analizador;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -69,6 +70,24 @@ public class Diccionario {
                 table.remove(entry.getKey());
         }
         */
+    }
+    
+    public boolean FindInLogs(List<logs> list, String lexeme, String clase){
+        for(logs sy : list){
+            //String syTipo = (sy.constante?"const "+sy.type:sy.type);
+            if(sy.clase.equals(clase) && sy.symbol.equals(lexeme))
+                return true;
+        }
+        return false;
+    }
+    
+    public logs getLogs(List<logs> list, String lexeme, String clase){
+        logs retorno = new logs("");
+        for(logs sy : list){
+            if(sy.clase.equals(clase) && sy.symbol.equals(lexeme))
+                retorno = sy;
+        }
+        return retorno;
     }
     
     public boolean isNumber(byte[] lexeme){

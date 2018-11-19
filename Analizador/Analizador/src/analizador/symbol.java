@@ -19,12 +19,24 @@ public class symbol {
     public int ambito; 
     public String parametros;
     public String clase;
+    public String[] valArray = new String[100];
     
     symbol(String lexeme, String type, int ambito, String clase){
         this.lexeme = lexeme;
         this.type = type; 
         this.ambito = ambito;
         this.clase = clase;
+    }
+    
+    symbol(String lexeme, String type, int ambito, String clase, String value){
+        this.lexeme = lexeme;
+        this.type = type; 
+        this.ambito = ambito;
+        this.value = value;
+    }
+    
+    public void ValArray(String valor, int posicion){
+        valArray[posicion] = valor;
     }
     
     public void SymbolValue(String value){

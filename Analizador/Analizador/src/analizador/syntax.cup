@@ -38,7 +38,7 @@ action code {:
                 Diccionario exec = new Diccionario();
 
                 public int context = 0, cMin = 0, ambito = 0;
-                public String parametros = "", clase = "null";
+                public String parametros = "", clase = "null", val = "$", cls = "$";
             :}
 
 /*  Symbol Lists  */
@@ -87,7 +87,7 @@ Variable ::=  CONST Type:tipo ident:nombre assignment Constant:valor
                 else{
                     symbol s = new symbol (nombre.toString(), "const " + tipo.toString(), ambito, clase);
                     s.constante = true;
-                    s.SymbolValue(valor.toString());
+                    s.SymbolValue(valor.toString());    
                     Sintactico.symbolTable.put(nombre.toString(), s);
                     Sintactico.Log.add(new logs("INSERT", nombre.toString(), "const " + tipo.toString(), valor.toString(), ambito, clase));
                 } 
@@ -306,11 +306,17 @@ ReturnStmt ::= sReturn ExprOZ pyc;
 BreakStmt ::= sBreak pyc;
 
 PrintStmt ::= sPrint OpeningParenthesis Expr ExprRepeat ClosedParenthesis pyc;
-ExprRepeat ::= comma Expr ExprRepeat| /* epsilon */ ;
+ExprRepeat ::= comma Expr:simbolo ExprRepeat{: 
+            if(exec.AlreadyExists(Sintactico.symbolTable, simbolo.toString(), ambito, cMin)){
+                symbol s = exec.FindSymbol(Sintactico.symbolTable, simbolo.toString(), ambito, cMin);
+                parametros = s.type + "$";
+            }else 
+                System.out.println("\033[31m***ERROR: SYMBOL "+ simbolo.toString() +" DOES NOT EXIST***");
+        :}| /* epsilon */ ;
 
-Expr ::= LValue assignment Expr
-        |Constant 
-        |LValue 
+Expr ::= LValue:nombre1 assignment Expr:nombre2
+        |Constant:valor {: RESULT = valor.toString(); :}
+        |LValue:nombre {: RESULT = nombre.toString(); :}
         |sThis
         |Call 
         |OpeningParenthesis Expr ClosedParenthesis
@@ -331,26 +337,80 @@ Expr ::= LValue assignment Expr
         |sReadLine OpeningParenthesis ClosedParenthesis
         |sMalloc OpeningParenthesis Expr ClosedParenthesis;
 
-LValue ::= ident:nombre
-           |Expr:simbolo dot ident:nombre
-           |Expr:simbolo1 OpeningBracket Expr:simbolo2 ClosedBracket;
+LValue ::= ident:nombre {: 
+                if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin)){
+                     
+                }
+                else
+                    System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" IS ALREADY EXIST***");
+                RESULT = nombre.toString();
+            :}
+           |Expr:simbolo dot ident:nombre  {: 
+                if(exec.AlreadyExists(Sintactico.symbolTable, simbolo.toString(), ambito, cMin)){
+                    if(exec.FindInLogs(Sintactico.Log, nombre, simbolo.toString())){
+                        val = "log";
+                        cls = simbolo.toString();
+                    }
+                    else
+                         System.out.println("\033[31m***ERROR: METHOD "+ nombre.toString() +" DOES NOT EXIST***");
+                }
+                else 
+                     System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" DOES NOT EXIST***");
+                 RESULT = nombre.toString();
+            :}
+           |Expr:simbolo1 OpeningBracket Expr:simbolo2 ClosedBracket {: 
+                if(exec.AlreadyExists(Sintactico.symbolTable, simbolo1.toString(), ambito, cMin)){
+                    if(exec.AlreadyExists(Sintactico.symbolTable, simbolo2.toString(), ambito, cMin)){
+                        val = "array";
+                        symbol s = exec.FindSymbol(Sintactico.symbolTable, simbolo2.toString(), ambito, cMin);
+                        cls = s.value;
+                    }
+                    else 
+                     System.out.println("\033[31m***ERROR: SYMBOL "+ simbolo2.toString() +" DOES NOT EXIST***");
+                }
+                else 
+                     System.out.println("\033[31m***ERROR: SYMBOL "+ simbolo1.toString() +" DOES NOT EXIST***");
+                 RESULT = simbolo1.toString();
+            :};
 
-Call ::= ident OpeningParenthesis Actuals ClosedParenthesis
-        |ident Parenthesis
-        |Expr dot ident OpeningParenthesis Actuals ClosedParenthesis
-        |Expr dot ident Parenthesis
-        |Expr dot LibCall OpeningParenthesis Actuals ClosedParenthesis
-        |Expr dot LibCall Parenthesis;
+Call ::= ident:nombre OpeningParenthesis Actuals ClosedParenthesis {: 
+            if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin)){
+                symbol s = exec.FindFunction(Sintactico.symbolTable, nombre.toString());
+                if(s.parametros != parametros){
+                    System.out.println("\033[31m***ERROR: "+ nombre.toString() +" PARAMETERS DO NOT MATCH.***");
+                }
+            }
+            else
+                System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" DOES NOT EXIST***");
+            parametros = "";
+            RESULT = nombre.toString();       
+        :}
+        |ident:nombre Parenthesis{: 
+            if(!exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin)){
+                System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" DOES NOT EXIST***");
+            }
+            RESULT = nombre.toString();       
+        :}
+        |Expr:simbolo dot ident:nombre OpeningParenthesis Actuals ClosedParenthesis
+        |Expr:simbolo dot ident:nombre Parenthesis
+        |Expr:simbolo dot LibCall OpeningParenthesis Actuals ClosedParenthesis
+        |Expr:simbolo dot LibCall Parenthesis;
 
 LibCall ::= sGetByte OpeningParenthesis Expr ClosedParenthesis
             |sSetByte OpeningParenthesis Expr comma Expr ClosedParenthesis;
 
-Actuals ::= Expr ExprRepeat| /* epsilon */ ;
+Actuals ::= Expr:simbolo ExprRepeat {: 
+            if(exec.AlreadyExists(Sintactico.symbolTable, simbolo.toString(), ambito, cMin)){
+                symbol s = exec.FindSymbol(Sintactico.symbolTable, simbolo.toString(), ambito, cMin);
+                parametros = s.type + "$";
+            }else 
+                System.out.println("\033[31m***ERROR: SYMBOL "+ simbolo.toString() +" DOES NOT EXIST***");
+        :}| /* epsilon */ ;
 
 //Constant ::= intConstant | doubleConstant | boolConstant | stringConstant | null
-Constant ::= integerConstant:valor {: RESULT = valor.toString();:}
-            |doubleConstant:valor {: RESULT = valor.toString();:}
-            |boolConstant:valor {: RESULT = valor.toString();:}
-            |stringConstant:valor {: RESULT = valor.toString();:}
-            |sNull {: RESULT = "null";:}
+Constant ::= integerConstant:valor {: Sintactico.symbolTable.put(valor.toString(), new symbol(valor.toString(), "int", ambito, clase, valor.toString())); RESULT = valor.toString();:}
+            |doubleConstant:valor {: Sintactico.symbolTable.put(Double.toString(valor), new symbol(Double.toString(valor), "double", ambito, clase, Double.toString(valor))); RESULT = Double.toString(valor);:}
+            |boolConstant:valor {: Sintactico.symbolTable.put(valor.toString(), new symbol(valor.toString(), "bool", ambito, clase, valor.toString())); RESULT = valor.toString();:}
+            |stringConstant:valor {: Sintactico.symbolTable.put(valor, new symbol(valor.toString(), "string", ambito, clase, valor)); RESULT = valor;:}
+            |sNull {: Sintactico.symbolTable.put("null", new symbol("null", "string", ambito, clase, "null")); RESULT = "null";:}
             ;
