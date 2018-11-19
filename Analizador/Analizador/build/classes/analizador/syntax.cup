@@ -391,10 +391,37 @@ Call ::= ident:nombre OpeningParenthesis Actuals ClosedParenthesis {:
             }
             RESULT = nombre.toString();       
         :}
-        |Expr:simbolo dot ident:nombre OpeningParenthesis Actuals ClosedParenthesis
-        |Expr:simbolo dot ident:nombre Parenthesis
-        |Expr:simbolo dot LibCall OpeningParenthesis Actuals ClosedParenthesis
-        |Expr:simbolo dot LibCall Parenthesis;
+        |Expr:simbolo dot ident:nombre OpeningParenthesis Actuals ClosedParenthesis {:
+                if(exec.AlreadyExists(Sintactico.symbolTable, simbolo.toString(), ambito, cMin)){
+                    if(exec.FindInLogs(Sintactico.Log, nombre, simbolo.toString())){
+                        logs l = exec.getLogs(Sintactico.Log, nombre.toString(), simbolo.toString());
+                        if(!l.parametros.equals(parametros))
+                            System.out.println("\033[31m***ERROR: "+ nombre.toString() +" PARAMETERS DO NOT MATCH.***");
+                        val = "log";
+                        cls = simbolo.toString();
+                    }
+                    else
+                         System.out.println("\033[31m***ERROR: CLASS "+ nombre.toString() +" DOES NOT EXIST***");
+                }
+                else 
+                     System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" DOES NOT EXIST***");
+                 RESULT = nombre.toString();
+            :}
+        |Expr:simbolo dot ident:nombre Parenthesis {:
+                if(exec.AlreadyExists(Sintactico.symbolTable, simbolo.toString(), ambito, cMin)){
+                    if(exec.FindInLogs(Sintactico.Log, nombre, simbolo.toString())){
+                        val = "log";
+                        cls = simbolo.toString();
+                    }
+                    else
+                         System.out.println("\033[31m***ERROR: CLASS "+ nombre.toString() +" DOES NOT EXIST***");
+                }
+                else 
+                     System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" DOES NOT EXIST***");
+                 RESULT = nombre.toString();
+            :}
+        |Expr:simbolo dot LibCall OpeningParenthesis Actuals ClosedParenthesis {: RESULT = simbolo.toString(); :}
+        |Expr:simbolo dot LibCall Parenthesis {: RESULT = simbolo.toString(); :};
 
 LibCall ::= sGetByte OpeningParenthesis Expr ClosedParenthesis
             |sSetByte OpeningParenthesis Expr comma Expr ClosedParenthesis;
