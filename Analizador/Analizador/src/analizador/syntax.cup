@@ -44,7 +44,7 @@ action code {:
 /*  Symbol Lists  */
 
 // Terminals
-terminal pyc, INT, DOUBLE, BOOL, STRING, OpeningBracket, ClosedBracket, OpeningParenthesis, ClosedParenthesis, sVoid, comma, sClass, OpeningCurlyBracket, ClosedCurlyBracket, sExtends, sImplements, sInterface,
+terminal pyc, CONST, INT, DOUBLE, BOOL, STRING, OpeningBracket, ClosedBracket, OpeningParenthesis, ClosedParenthesis, sVoid, comma, sClass, OpeningCurlyBracket, ClosedCurlyBracket, sExtends, sImplements, sInterface,
 cIf, cElse, lWhile, lFor, sReturn, sBreak, sPrint, assignment, sThis, sNew, sNewArray, sReadInteger, sMalloc, dot, sGetByte, sSetByte, sNull, sReadLine,
 ComparisonOperators, equality, negative, sum, ArithmeticOperators, denial, Brackets, and, or, Parenthesis, CurlyBrackets;
 terminal Integer    integerConstant;
@@ -80,7 +80,20 @@ Decl ::=  VariableDecl|
 
 VariableDecl ::= Variable pyc;
 
-Variable ::= Type:tipo ident:nombre 
+Variable ::=  CONST Type:tipo ident:nombre assignment Constant:valor
+            {:
+                if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
+                    System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" IS ALREADY EXIST***");
+                else{
+                    symbol s = new symbol (nombre.toString(), "const " + tipo.toString(), ambito, clase);
+                    s.constante = true;
+                    s.SymbolValue(valor.toString());
+                    Sintactico.symbolTable.put(nombre.toString(), s);
+                    Sintactico.Log.add(new logs("INSERT", nombre.toString(), "const " + tipo.toString(), valor.toString(), ambito, clase));
+                } 
+                RESULT = tipo.toString();
+            :}
+            | Type:tipo ident:nombre 
             {:
                 if(exec.AlreadyExists(Sintactico.symbolTable, nombre.toString(), ambito, cMin))
                     System.out.println("\033[31m***ERROR: SYMBOL "+ nombre.toString() +" IS ALREADY EXIST***");
@@ -335,8 +348,9 @@ LibCall ::= sGetByte OpeningParenthesis Expr ClosedParenthesis
 Actuals ::= Expr ExprRepeat| /* epsilon */ ;
 
 //Constant ::= intConstant | doubleConstant | boolConstant | stringConstant | null
-Constant ::= integerConstant
-            |doubleConstant 
-            |boolConstant 
-            |stringConstant 
-|sNull;
+Constant ::= integerConstant:valor {: RESULT = valor.toString();:}
+            |doubleConstant:valor {: RESULT = valor.toString();:}
+            |boolConstant:valor {: RESULT = valor.toString();:}
+            |stringConstant:valor {: RESULT = valor.toString();:}
+            |sNull {: RESULT = "null";:}
+            ;

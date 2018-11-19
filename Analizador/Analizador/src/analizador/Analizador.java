@@ -36,9 +36,6 @@ public class Analizador {
     public static void main(String[] args) {
         // TODO code application logic here
         Scanner s = new Scanner(System.in);
-        Hashtable<String, symbol> symbolTable = new Hashtable<String, symbol>();
-        List<logs> Log = new  ArrayList<logs>();
-
         int valor = 0;
         do{
             System.out.println("Insertar numero\n"
@@ -80,6 +77,8 @@ public class Analizador {
                     
                 case 3:
                     //=======================================================
+                    Hashtable<String, symbol> symbolTable = new Hashtable<String, symbol>();
+                    List<logs> Log = new  ArrayList<logs>();
                     String code="", line, newPath = "";
                     File file2 = new File("test.txt");
                     JFileChooser selectedfile = new JFileChooser();
